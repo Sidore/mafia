@@ -1,24 +1,26 @@
 <template lang="pug">
   div#app
-    h3 new template with pug
-    div
-        p root component
-        button("v-on:click"='start') Start
-        router-link(to="/item") item
-        router-link(to="/") home   
+    p root component
+    button("v-on:click"='start') Start
+    mm
     router-view
-    div
-        input(v-model="message")
-        button("v-on:click"="send")
+    control(:socket="socket")
+
 </template>
 <script>
+import control from "@components/Control"
+import mm from "@components/MainMenu"
 export default {
   asyncData ({ store, route }) {
+  },
+  components : {
+      control,
+      mm
   },
   data() {
       return {
           socket : {},
-          message : ""
+        //   message : ""
       }
   },
   methods: {
@@ -28,15 +30,6 @@ export default {
             type: "gamestart",
             // value: outgoingMessage
         }));
-    },
-    send : function(){
-        console.log('send')
-        
-        this.socket.send(JSON.stringify({
-            type:"message",
-            message: this.message
-        }));
-        this.message = "";
     }
   },
   computed: {

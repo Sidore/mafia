@@ -39,5 +39,12 @@ module.exports = {
         //       : ['vue-style-loader', 'css-loader']
         //   }
         ]
+      },
+      devtool: "eval",
+      resolve: {
+        alias: {
+          "@components" : path.resolve(__dirname,"../","src","components")
+        },
+        extensions: [".vue",".js", ".json",".styl","*"]
       }
 }
