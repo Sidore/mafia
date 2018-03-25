@@ -5,17 +5,17 @@
 </template>
 <script>
 export default {
-  asyncData ({ store, route }) {
+    asyncData({ store, route }) {
     // возвращаем Promise из действия
     // return store.dispatch('fetchItem', route.params.id)
-  },
-  computed: {
-      messages : function () {
-          return this.$store.state.messages
-      }
-  },
-  methods: {
+    },
+    computed: {
+        messages : function() {
+            return this.$store.state.messages;
+        }
+    },
+    methods: {
 
-  }
-}
+    }
+};
 </script>

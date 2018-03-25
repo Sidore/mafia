@@ -10,6 +10,7 @@ module.exports = {
       },
       module: {
         // noParse: /es6-promise\.js$/, // avoid webpack shimming process
+        
         rules: [
           {
             test: /\.vue$/,
@@ -29,6 +30,15 @@ module.exports = {
               name: '[name].[ext]?[hash]'
             }
           },
+          {
+              enforce: "pre",
+              test: /\.vue$/,
+              loader: "eslint-loader",
+              exclude: /node_modules/,
+              options: {
+                  fix: true,
+              }
+          }
         //   {
         //     test: /\.css$/,
         //     use: isProd

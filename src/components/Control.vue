@@ -5,23 +5,21 @@
 </template>
 <script>
 export default {
-    props: ["socket"],
-    data () {
+    props: [ "socket" ],
+    data() {
         return {
             message: ""
-        }
+        };
     },
     methods : {
-        send : function(){
-        console.log('send')
-        // console.log(this.socket)
-        
-        this.socket.send(JSON.stringify({
-            type:"message",
-            message: this.message
-        }));
-        this.message = "";
+        send : function() {
+            console.log("send");
+            this.socket.send(JSON.stringify({
+                type:"message",
+                message: this.message
+            }));
+            this.message = "";
+        }
     }
-    }
-}
+};
 </script>
