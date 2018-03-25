@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
-
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+ 
+Vue.use(VueAxios, axios)
 Vue.use(Vuex)
 
 Vue.mixin({
@@ -40,15 +42,20 @@ export function createStore () {
     // модуль мог инстанцироваться несколько раз
     state: () => ({
       count: 0,
-      messages : []
+      messages : [],
+      users: []
     }),
     actions: {
       inc: ({ commit }) => commit('inc'),
-      mes: ({commit}, message) => commit('mes', message)
+      mes: ({commit}, message) => commit('mes', message),
+      users : ({commit}) => Vue.axios('https://jsonplaceholder.typicode.com/users').then((users) => {
+        commit("users", users)
+      })
     },
     mutations: {
       inc: state => state.count++,
-      mes: (state, message) => state.messages.push(message)
+      mes: (state, message) => state.messages.push(message),
+      users: (state, users) => state.users = users.data
     }
   })
 }

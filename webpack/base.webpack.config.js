@@ -4,6 +4,7 @@ const webpack = require('webpack')
 module.exports = {
     output: {
         path: path.resolve(__dirname, '../dist'),
+        chunkFilename: '[id].bundle.js',
         publicPath: '/dist/',
         filename: '[name].js'
       },

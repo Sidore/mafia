@@ -24,7 +24,7 @@ server.get('*', (req, res) => {
   
     //   createApp(context).then(app => {
         renderer.renderToString(context, (err, html) => {
-            // console.log(err)
+            console.log(err)
           if (err) {
             if (err.code === 404) {
               res.status(404).end('404')

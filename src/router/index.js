@@ -9,8 +9,8 @@ export function createRouter () {
   return new Router({
     mode: 'history',
     routes: [
-      { path: '/', component : Home , name: "Home" },
-      { path: '/item', component : Item , name : "Item"}
+      { path: '/', component : () => System.import("../components/Home.vue") , name: "Home" },
+      { path: '/item', component : () => System.import("../components/Item.vue") , name : "Item"}
     ]
   })
 }
