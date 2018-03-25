@@ -1,5 +1,5 @@
 
-describe("Test group for front-app", function(){
+describe("Test group for front-app", () => {
 
     it("should return a second pow", function(){
         expect(Math.pow(2,2)).toBe(4);
@@ -14,5 +14,5 @@ describe("Test group for front-app", function(){
         expect(+prompt("")).toBeGreaterThan(6)
     })
 
-})
+});
 
