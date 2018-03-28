@@ -1,3 +1,4 @@
+
 const path = require("path");
 const webpack = require("webpack");
 
@@ -8,6 +9,7 @@ module.exports = {
         publicPath: "/dist/",
         filename: "[name].js"
     },
+    mode: "production", // development
     module: {
         // noParse: /es6-promise\.js$/, // avoid webpack shimming process
 

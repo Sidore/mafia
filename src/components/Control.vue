@@ -13,7 +13,6 @@ export default {
     },
     methods : {
         send : function() {
-            console.log("send");
             this.socket.send(JSON.stringify({
                 type:"message",
                 message: this.message

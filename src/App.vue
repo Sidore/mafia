@@ -24,7 +24,6 @@ export default {
     },
     methods: {
         start : function() {
-            console.log("gamestart");
             this.socket.send(JSON.stringify({
                 type: "gamestart",
             }));
@@ -36,10 +35,7 @@ export default {
         }
     },
     beforeMount() {
-        let v = this;
-
         this.socket = new WebSocket("ws://localhost:8081");
-
         this.socket.onopen = () => {
             this.socket.send(JSON.stringify({
                 type : "auth",
@@ -49,8 +45,8 @@ export default {
 
         this.socket.onmessage = function(event) {
             let incomingMessage = event.data;
-            v.$store.dispatch("mes", incomingMessage);
-        };
+            this.$store.dispatch("mes", incomingMessage);
+        }.bind(this);
     }
 };
 </script>

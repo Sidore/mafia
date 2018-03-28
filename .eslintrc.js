@@ -111,7 +111,7 @@ module.exports = exports = {
         "no-undef-init": OFF,
         "no-undef": ERROR,
         "no-undefined": OFF,
-        "no-unused-vars": WARN,
+        "no-unused-vars": OFF,
         // Disallow hoisting - let & const don't allow hoisting anyhow
         "no-use-before-define": ERROR,
 
@@ -155,7 +155,7 @@ module.exports = exports = {
         "computed-property-spacing": [ WARN, "never" ],
         "consistent-this": [ WARN, "self" ],
         "eol-last": WARN,
-        "func-names": WARN,
+        "func-names": OFF,
         "func-style": [ WARN, "declaration" ],
         "id-length": [ WARN, { "min": 2, "max": 32 } ],
         "indent": [ WARN, 4 ],
