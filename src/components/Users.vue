@@ -9,7 +9,7 @@
 </template>
 <script>
 export default {
-    data(){
+    data() {
         return {
             users : [
                 {
@@ -30,9 +30,9 @@ export default {
                     role: null
                 }
             ]
-        }
+        };
     }
-}
+};
 </script>
 <style>
 

@@ -14,8 +14,7 @@ export function createApp() {
         router,
         store,
         render: (req) => {
-            return req(App)
-            ;
+            return req(App);
         }
     });
 
