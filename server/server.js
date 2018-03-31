@@ -27,9 +27,11 @@ server.get("*", (req, res) => {
         console.log(err);
         if (err) {
             if (err.code === 404) {
-                res.status(404).end("404");
+                let notFound = require("fs").readFileSync("static/html/404.template.html", "utf-8");
+                res.status(404).end(notFound);
             } else {
-                res.status(500).end("500");
+                let serverError = require("fs").readFileSync("static/html/500.template.html", "utf-8")
+                res.status(500).end(serverError);
             }
         } else {
             res.end(html);
@@ -368,7 +370,7 @@ console.log("server");
 wss.on("connection", (ws) => {
     let u = clients.addUser(ws);
 
-    console.log(clients.users.map((u) => {return u.name}));
+    console.log(clients.users.map((u) => {return u.name;}));
 
     ws.on("message", (message) => {
         let action = JSON.parse(message);
