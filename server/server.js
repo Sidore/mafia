@@ -48,7 +48,7 @@ let clients = {
     addUser : function(ws) {
         let user = {
             ws,
-            name : `user ${  this.counter++}`,
+            name : `user ${this.counter++}`,
             role : "none",
             status : "alive",
             send : function(message) {
@@ -65,19 +65,35 @@ let clients = {
         });
     },
     findUser : function(message) {
-        return clients.users.find((u) => {return u.name == message});
+        return clients.users.find((user) => {
+            return user.name === message;
+        });
     },
     findUserByRole : function(role) {
-        return clients.users.find((u) => {return u.role == role});
+        return clients.users.find((user) => {
+            return user.role === role;
+        });
     },
     findUsers : function() {
 
     },
     broadcast : function(message, role = "*") {
-        if (role == "alive") {
-            this.users.filter((u) => {return u.status != "dead"}).map((u) => {return u.ws}).forEach((u) => {return u.send(message)});
+        if (role === "alive") {
+            this.users.filter((user) => {
+                return user.status !== "dead";
+            }).map((user) => {
+                return user.ws;
+            }).forEach((user) => {
+                return user.send(message);
+            });
         } else {
-            this.users.filter((u) => {return role == "*" || u.role == role}).map((u) => {return u.ws}).forEach((u) => {return u.send(message)});
+            this.users.filter((user) => {
+                return role === "*" || user.role === role;
+            }).map((user) => {
+                return user.ws;
+            }).forEach((user) => {
+                return user.send(message);
+            });
         }
     },
     send : function() {}
@@ -92,33 +108,36 @@ let game = {
         _length: 0
     },
     isFinnished : function() {
-        return !(this.clients.users.some((u) => {return u.status != "dead" && (u.role == "civil" || u.role == "doctor")})
-                    && this.clients.users.some(u => u.status != "dead" && u.role == "mafia"))
-                || this.clients.users.length == 2 && this.clients.users.some(u => u.status != "dead" && (u.role == "civil" || u.role == "doctor") && this.clients.users.some(u => u.status != "dead" && u.role == "mafia"));
+        return !(this.clients.users.some((user) => {
+            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor");
+        }) && this.clients.users.some((user) => {
+            return user.status !== "dead" && user.role === "mafia";
+        })) || this.clients.users.length === 2 && this.clients.users.some((user) => {
+            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor") && this.clients.users.some((user) => {
+                return user.status !== "dead" && user.role === "mafia";
+            });
+        });
     },
     whoWon : function() {
-        return this.clients.users.some((u) => {return u.status != "dead" && (u.role == "civil" || u.role == "doctor")}) ? "civil" : "mafia";
+        return this.clients.users.some((user) => {
+            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor");
+        }) ? "civil" : "mafia";
     },
-    checkRoles : function(){
-        if (game.state == "doctor") {
+    checkRoles : function() {
+        if (game.state === "doctor") {
             if (this.clients.findUserByRole("doctor")) {
                 return true;
-            } 
-                game.state = game.states[6]
-                return false;
-            
+            }
+            game.state = game.states[6];
+            return false;
         }
-        
-        if (game.state == "police") {
+        if (game.state === "police") {
             if (this.clients.findUserByRole("police")) {
                 return true;
-            } else {
-                game.state = game.states[7]
-                return false;
             }
+            game.state = game.states[7];
+            return false;
         }
-        
-
     },
     queue : [],
     events : {
