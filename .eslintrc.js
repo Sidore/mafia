@@ -2,7 +2,7 @@ var OFF = 0, WARN = 1, ERROR = 2;
 
 module.exports = exports = {
     "env": {
-        "es6": true
+        "es6": true,
     },
 
     // "extends": "eslint:recommended",
@@ -41,7 +41,7 @@ module.exports = exports = {
         "dot-notation": WARN,
         "eqeqeq": [ ERROR, "smart" ],
         "guard-for-in": WARN,
-        "no-alert": ERROR,
+        "no-alert": WARN,
         "no-caller": ERROR,
         "no-case-declarations": WARN,
         "no-div-regex": WARN,

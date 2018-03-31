@@ -3,6 +3,7 @@
     p root component
     button("v-on:click"='start') Start
     main-menu
+    users
     router-view
     control(:socket="socket")
 
@@ -10,12 +11,15 @@
 <script>
 import control from "@components/Control";
 import mainMenu from "@components/MainMenu";
+import users from "@components/Users";
+
 export default {
     asyncData({ store, route }) {
     },
     components : {
         control,
-        mainMenu
+        mainMenu,
+        users
     },
     data() {
         return {
@@ -39,7 +43,7 @@ export default {
         this.socket.onopen = () => {
             this.socket.send(JSON.stringify({
                 type : "auth",
-                message : "vlad"
+                message : prompt("Name")
             }));
         };
 

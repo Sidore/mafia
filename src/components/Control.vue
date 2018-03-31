@@ -14,7 +14,7 @@ export default {
     methods : {
         send : function() {
             this.socket.send(JSON.stringify({
-                type:"message",
+                type: "message",
                 message: this.message
             }));
             this.message = "";
