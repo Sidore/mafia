@@ -52,7 +52,10 @@ let clients = {
             role : "none",
             status : "alive",
             send : function(message) {
-                this.ws.send(message);
+                let mes = typeof message === "object" ?
+                    JSON.stringify(message) :
+                    JSON.stringify({ type : "message", data : message });
+                this.ws.send(mes);
             }
         };
 
@@ -79,7 +82,7 @@ let clients = {
     },
     broadcast : function(message, role = "*") {
 
-        let mes = typeof message === "object" ? JSON.stringify(message) : { type : "message", data : message };
+        let mes = typeof message === "object" ? JSON.stringify(message) : JSON.stringify({ type : "message", data : message });
 
         if (role === "alive") {
             this.users.filter((user) => {
@@ -151,7 +154,7 @@ let game = {
             case "idle" : 
                 if (action.type == "auth" && action.message) {
                     user.name = action.message;
-                    game.clients.broadcast(`Новый игрок ${  user.name}`);
+                    game.clients.broadcast(`Новый игрок ${user.name}`);
                 } else if (action.type == "gamestart" && game.clients.users.length >= 4) {
                     this.start();
                 }

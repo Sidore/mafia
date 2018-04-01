@@ -14,7 +14,7 @@ export default {
     },
     computed: {
         users : function() {
-            return this.$store.getters.users;
+            return this.$store.state.users;
         }
     }
 };

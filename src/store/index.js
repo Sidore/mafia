@@ -58,6 +58,7 @@ export function createStore() {
                 // return Vue.axios("https://jsonplaceholder.typicode.com/users").then((users) => {
                 //     commit("users", users);
                 // });
+                console.log("action.users", data);
                 commit("users", data);
             }
         },
@@ -69,7 +70,12 @@ export function createStore() {
                 return state.messages.push(message);
             },
             users: (state, users) => {
-                state.users = users.data;
+                console.log("mutations.users", users);
+                
+                state.users = users;
+                console.log("mutations.users state", state);
+                
+
                 return state.users;
             }
         },
