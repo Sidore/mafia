@@ -48,8 +48,13 @@ export default {
         };
 
         this.socket.onmessage = function(event) {
-            let incomingMessage = event.data;
-            this.$store.dispatch("mes", incomingMessage);
+            let incomingMessage = JSON.parse(event.data);
+
+            if (incomingMessage.type === "message") {
+                this.$store.dispatch("mes", incomingMessage.data);
+            } else if (incomingMessage.type === "info") {
+                this.$store.dispatch("users", incomingMessage.data);
+            }
         }.bind(this);
     }
 };

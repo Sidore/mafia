@@ -54,11 +54,11 @@ export function createStore() {
             mes: ({ commit }, message) => {
                 return commit("mes", message);
             },
-            users : ({ commit }) => {
-                return Vue.axios("https://jsonplaceholder.typicode.com/users").then((users) => {
-                    commit("users", users);
-                })
-                ;
+            users : ({ commit }, data) => {
+                // return Vue.axios("https://jsonplaceholder.typicode.com/users").then((users) => {
+                //     commit("users", users);
+                // });
+                commit("users", data);
             }
         },
         mutations: {
@@ -70,6 +70,12 @@ export function createStore() {
             },
             users: (state, users) => {
                 state.users = users.data;
+                return state.users;
+            }
+        },
+
+        getters: {
+            users: (state) => {
                 return state.users;
             }
         }

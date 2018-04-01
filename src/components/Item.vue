@@ -8,7 +8,7 @@
 <script>
 export default {
     asyncData({ store, route }) {
-        return store.dispatch("users");
+        // return store.dispatch("users");
     },
     computed: {
         counter : function() {

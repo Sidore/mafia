@@ -78,13 +78,16 @@ let clients = {
 
     },
     broadcast : function(message, role = "*") {
+
+        let mes = typeof message === "object" ? JSON.stringify(message) : { type : "message", data : message };
+
         if (role === "alive") {
             this.users.filter((user) => {
                 return user.status !== "dead";
             }).map((user) => {
                 return user.ws;
             }).forEach((user) => {
-                return user.send(message);
+                return user.send(mes);
             });
         } else {
             this.users.filter((user) => {
@@ -92,7 +95,7 @@ let clients = {
             }).map((user) => {
                 return user.ws;
             }).forEach((user) => {
-                return user.send(message);
+                return user.send(mes);
             });
         }
     },
@@ -145,16 +148,14 @@ let game = {
             console.log(game.state);
 
             switch (game.state) {
-            case "idle" : {
+            case "idle" : 
                 if (action.type == "auth" && action.message) {
                     user.name = action.message;
                     game.clients.broadcast(`Новый игрок ${  user.name}`);
                 } else if (action.type == "gamestart" && game.clients.users.length >= 4) {
                     this.start();
-                } else {
-
                 }
-            } break;
+                break;
             case "start" :break;
             case "roles" :break;
             case "sleep" :break;
@@ -191,6 +192,16 @@ let game = {
             game.clients.broadcast("Игра началась!");
 
             game.events.setRoles();
+
+            game.clients.broadcast({
+                type : "info",
+                data : clients.users.map((user) => {
+                    return {
+                        name : user.name,
+                        role : user.role
+                    };
+                })
+            });
 
             game.state = game.states[3];
 
