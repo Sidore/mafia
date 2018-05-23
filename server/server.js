@@ -37,7 +37,6 @@ server.get("*", (req, res) => {
             res.end(html);
         }
     });
-    //   })
 });
 
 server.listen(8082);
@@ -102,7 +101,10 @@ let clients = {
             });
         }
     },
-    send : function() {}
+    send : function() {},
+    forEach : function(callback) {
+        this.users.forEach(callback);
+    }
 };
 
 let game = {
@@ -256,9 +258,9 @@ let game = {
             // console.log(message, )
             // game.state = game.states[4];
             let d = clients.users.find((u) => {return u.name == message});
-            d.status = "dead";
+            d.status = "shooted";
 
-            game.queue.push(`Ночью был убит ${  d.name}`);
+            game.queue.push(`Ночью был убит ${d.name}`);
 
             // game.clients.broadcast("Ночью был убит " + d.name);
 
@@ -285,7 +287,7 @@ let game = {
 
             if (game.checkRoles()) {
                 game.clients.broadcast("Просыпается шериф и делает свой выбор...");
-                game.clients.broadcast(`Делайте свой выбор: ${  game.clients.users.filter(u => u.status != "dead").map(u => u.name).join(', ')}`, "police");
+                game.clients.broadcast(`Делайте свой выбор: ${ game.clients.users.filter(u => u.status != "dead" && u.role != "police").map(u => u.name).join(', ')}`, "police");
             } else {
                 this.beforeVoting();
             }
@@ -297,9 +299,9 @@ let game = {
             // d.status = "";
 
 
-            let ans = d.role == "mafia" ? "мафия!" : "не мафия";
+            let ans = d.role === "mafia" ? "мафия!" : "не мафия";
             // game.clients.broadcast("Ночью был убит " + d.name);
-            user.send(`${d.name  } - ${  ans}`);
+            user.send(`${d.name} - ${ans}`);
             game.state = game.states[7];
 
             this.beforeVoting();
@@ -309,9 +311,19 @@ let game = {
                 game.clients.broadcast(m);
             });
 
+            game.clients.forEach((client) => {
+                if (client.status === "shooted") {
+                    client.status = "dead";
+                }
+
+                if (client.status === "cured") {
+                    client.status = "alive";
+                }
+            });
+
             game.queue = [];
 
-            game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${  game.clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "alive");
+            game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${ game.clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "alive");
 
             game.state = game.states[8];
         },
@@ -398,7 +410,7 @@ let game = {
     }
 };
 
-console.log("server");
+console.log("server 8082");
 
 wss.on("connection", (ws) => {
     let u = clients.addUser(ws);
