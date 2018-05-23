@@ -1,7 +1,5 @@
 <template lang="pug">
   div#app
-    p root component
-    button("v-on:click"='start') Start
     main-menu
     users
     router-view
@@ -27,11 +25,7 @@ export default {
         };
     },
     methods: {
-        start : function() {
-            this.socket.send(JSON.stringify({
-                type: "gamestart",
-            }));
-        }
+
     },
     computed: {
         counter : function() {
@@ -49,11 +43,14 @@ export default {
 
         this.socket.onmessage = function(event) {
             let incomingMessage = JSON.parse(event.data);
+            console.log(incomingMessage);
 
             if (incomingMessage.type === "message") {
                 this.$store.dispatch("mes", incomingMessage.data);
             } else if (incomingMessage.type === "info") {
                 this.$store.dispatch("users", incomingMessage.data);
+            } else if (incomingMessage.type === "gamestart") {
+                this.$store.dispatch("startGame");
             }
         }.bind(this);
     }
@@ -61,7 +58,9 @@ export default {
 </script>
 
 <style lang="scss">
+    #app {
 
+    }
 </style>
 
 

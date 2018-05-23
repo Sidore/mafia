@@ -194,7 +194,10 @@ let game = {
         start : function() {
             game.state = game.states[1];
 
-            game.clients.broadcast("Игра началась!");
+            game.clients.broadcast({
+                type : "gamestart",
+                data: "Игра началась!"
+            });
 
             game.events.setRoles();
 

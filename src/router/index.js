@@ -10,7 +10,9 @@ export function createRouter() {
         mode: "history",
         routes: [
             { path: "/", component : () => import("@components/Home") , name: "Home" },
-            { path: "/item", component : () => import("@components/Item") , name : "Item" }
+            { path: "/profile", component : () => import("@components/Item") , name : "Item" },
+            { path: "/info", component : () => import("@components/Item") , name : "info" }
+            
         ]
     });
 }

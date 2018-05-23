@@ -44,7 +44,8 @@ export function createStore() {
             return {
                 count: 0,
                 messages : [],
-                users: []
+                users: [],
+                started : false
             };
         },
         actions: {
@@ -60,11 +61,17 @@ export function createStore() {
                 // });
                 console.log("action.users", data);
                 commit("users", data);
+            },
+            startGame : ({ commit }) => {
+                return commit("start");
             }
         },
         mutations: {
             inc: (state) => {
                 return state.count++;
+            },
+            start: (state) => {
+                state.started = true;
             },
             mes: (state, message) => {
                 return state.messages.push(message);
@@ -83,6 +90,10 @@ export function createStore() {
         getters: {
             users: (state) => {
                 return state.users;
+            },
+
+            started: (state) => {
+                return state.started;
             }
         }
     });
