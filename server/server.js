@@ -184,9 +184,14 @@ let game = {
         start : function() {
             game.state = game.states[1];
 
+            game.clients.broadcast("Игра началась!");
             game.clients.broadcast({
                 type : "gamestart",
                 data: "Игра началась!"
+            });
+
+            game.clients.forEach((client) => {
+                client.status = "alive";
             });
 
             game.events.setRoles();
@@ -208,8 +213,14 @@ let game = {
         sleep: function() {
             game.clients.broadcast("Город засыпает...");
             game.clients.broadcast("Просыпается мафия и делает свой выбор...");
-            game.clients.broadcast(`Делайте свой выбор: ${  clients.users.filter(u => u.role !== "mafia" && u.status != "dead").map(u => u.name).join(', ')}`, "mafia");
-
+            game.clients.broadcast(`Делайте свой выбор: ${clients.users.filter(u => u.role !== "mafia" && u.status != "dead").map(u => u.name).join(', ')}`, "mafia");
+            game.clients.broadcast({
+                type: "option",
+                data : clients.users.filter((u) => {
+                    return u.role !== "mafia" && u.status !== "dead";
+                }).map((u) => {
+                    return u.name; })
+            }, "mafia");
             game.state = game.states[4];
         },
         setRoles : function() {
@@ -264,6 +275,13 @@ let game = {
             if (game.checkRoles("doctor")) {
                 game.clients.broadcast("Просыпается доктор и делает свой выбор...");
                 game.clients.broadcast(`Делайте свой выбор: ${  clients.users.filter(u => u.status != "dead").map(u => u.name).join(', ')}`, "doctor");
+                game.clients.broadcast({
+                    type: "option",
+                    data : clients.users.filter((u) => {
+                        return u.status !== "dead";
+                    }).map((u) => {
+                        return u.name; })
+                }, "doctor");
             } else {
                 game.state = game.states[6];
                 this.doctor();
@@ -283,6 +301,13 @@ let game = {
             if (game.checkRoles("police")) {
                 game.clients.broadcast("Просыпается шериф и делает свой выбор...");
                 game.clients.broadcast(`Делайте свой выбор: ${ game.clients.users.filter(u => u.status != "dead" && u.role != "police").map(u => u.name).join(', ')}`, "police");
+                game.clients.broadcast({
+                    type: "option",
+                    data : clients.users.filter((u) => {
+                        return u.status !== "dead" && u.role !== "police";
+                    }).map((u) => {
+                        return u.name; })
+                }, "police");
             } else {
                 this.beforeVoting();
             }

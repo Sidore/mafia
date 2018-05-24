@@ -3,9 +3,9 @@
         div(v-if="!started")
             button("v-on:click"='start') Start
         div(v-else)
-            div(v-if="conversationType == 'text'")
-                input(v-model="message")
-                button("@click"="send") Отправить
+            //- div(v-if="conversationType == 'text'")
+            //-     input(v-model="message")
+            //-     button("@click"="send") Отправить
             div(v-if="conversationType == 'options'")
                 button("v-for"="option in options" @click="choose(option)").card {{option}}
 </template>
@@ -50,3 +50,13 @@ export default {
     }
 };
 </script>
+<style lang="scss">
+#input {
+    .card {
+        background: white;
+        padding: 20px;
+        margin: 20px;
+        font-size: 20px;
+    }
+}
+</style>
