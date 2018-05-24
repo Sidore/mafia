@@ -26,7 +26,6 @@ export default {
             this.socket.send(JSON.stringify({
                 type: "gamestart",
             }));
-            this.$store.dispatch("startGame");
         }
     },
 

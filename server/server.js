@@ -324,6 +324,18 @@ let game = {
                 }
             });
 
+            game.clients.broadcast({
+                type : "info",
+                data : clients.users.filter((user) => {
+                    return user.status !== "dead";
+                }).map((user) => {
+                    return {
+                        name : user.name,
+                        role : user.role
+                    };
+                })
+            });
+
             game.queue = [];
 
             game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${ game.clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "alive");
@@ -397,7 +409,7 @@ let game = {
 
 
             if (game.isFinnished()) {
-                game.clients.broadcast(`Победили ${  game.whoWon()}`);
+                game.clients.broadcast(`Победили ${game.whoWon()}`);
 
                 this.finnish();
             } else {

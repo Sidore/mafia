@@ -49,6 +49,16 @@ export function createStore() {
             };
         },
         actions: {
+            parseMessage: ({ dispatch, commit }, incomingMessage) => {
+                console.log("parseMessage", incomingMessage);
+
+                switch (incomingMessage.type) {
+                case "message" : dispatch("mes", incomingMessage.data); break;
+                case "info" : dispatch("users", incomingMessage.data); break;
+                case "gamestart" : dispatch("startGame"); break;
+                default : dispatch("inc"); break;
+                }
+            },
             inc: ({ commit }) => {
                 return commit("inc");
             },
@@ -78,10 +88,10 @@ export function createStore() {
             },
             users: (state, users) => {
                 console.log("mutations.users", users);
-                
+
                 state.users = users;
                 console.log("mutations.users state", state);
-                
+
 
                 return state.users;
             }

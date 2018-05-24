@@ -43,21 +43,16 @@ export default {
 
         this.socket.onmessage = function(event) {
             let incomingMessage = JSON.parse(event.data);
-            console.log(incomingMessage);
-
-            if (incomingMessage.type === "message") {
-                this.$store.dispatch("mes", incomingMessage.data);
-            } else if (incomingMessage.type === "info") {
-                this.$store.dispatch("users", incomingMessage.data);
-            } else if (incomingMessage.type === "gamestart") {
-                this.$store.dispatch("startGame");
-            }
+            this.$store.dispatch("parseMessage", incomingMessage);
         }.bind(this);
     }
 };
 </script>
 
 <style lang="scss">
+    body {
+        margin: 0;
+    }
     #app {
 
     }

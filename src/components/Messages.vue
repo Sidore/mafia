@@ -1,6 +1,6 @@
 <template lang="pug">
   div
-    p Home component
+    p Messages
     p(v-for='m in messages') {{m}}
 </template>
 <script>

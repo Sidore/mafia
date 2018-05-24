@@ -9,7 +9,7 @@ export function createRouter() {
     return new Router({
         mode: "history",
         routes: [
-            { path: "/", component : () => import("@components/Home") , name: "Home" },
+            { path: "/", component : () => import("@components/Messages") , name: "Messages" },
             { path: "/profile", component : () => import("@components/Item") , name : "Item" },
             { path: "/info", component : () => import("@components/Item") , name : "info" }
             
