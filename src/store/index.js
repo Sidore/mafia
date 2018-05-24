@@ -45,7 +45,9 @@ export function createStore() {
                 count: 0,
                 messages : [],
                 users: [],
-                started : false
+                started : false,
+                conversationType : "text", // options || text
+                options : []
             };
         },
         actions: {
@@ -56,44 +58,50 @@ export function createStore() {
                 case "message" : dispatch("mes", incomingMessage.data); break;
                 case "info" : dispatch("users", incomingMessage.data); break;
                 case "gamestart" : dispatch("startGame"); break;
+                case "option" : dispatch("option", incomingMessage.data); break;
                 default : dispatch("inc"); break;
                 }
             },
             inc: ({ commit }) => {
-                return commit("inc");
+                commit("inc");
             },
             mes: ({ commit }, message) => {
-                return commit("mes", message);
+                commit("mes", message);
             },
             users : ({ commit }, data) => {
-                // return Vue.axios("https://jsonplaceholder.typicode.com/users").then((users) => {
-                //     commit("users", users);
-                // });
-                console.log("action.users", data);
                 commit("users", data);
             },
             startGame : ({ commit }) => {
-                return commit("start");
-            }
+                commit("start");
+            },
+            option : ({ commit }, data) => {
+                commit("option", data);
+            },
+            choose : ({ commit }, data) => {
+                commit("choose", data);
+            },
         },
         mutations: {
             inc: (state) => {
-                return state.count++;
+                state.count++;
             },
             start: (state) => {
                 state.started = true;
             },
             mes: (state, message) => {
-                return state.messages.push(message);
+                state.messages.push(message);
             },
             users: (state, users) => {
-                console.log("mutations.users", users);
-
                 state.users = users;
-                console.log("mutations.users state", state);
-
-
-                return state.users;
+            },
+            option : (state, message) => {
+                console.log(message);
+                state.conversationType = "options";
+                state.options = message;
+            },
+            choose : (state) => {
+                state.options = [];
+                state.conversationType = "text";
             }
         },
 
@@ -104,7 +112,15 @@ export function createStore() {
 
             started: (state) => {
                 return state.started;
-            }
+            },
+
+            conversationType: (state) => {
+                return state.conversationType;
+            },
+
+            options : (state) => {
+                return state.options;
+            },
         }
     });
 }

@@ -131,26 +131,16 @@ let game = {
             return user.status !== "dead" && (user.role === "civil" || user.role === "doctor");
         }) ? "civil" : "mafia";
     },
-    checkRoles : function() {
-        if (game.state === "doctor") {
-            if (this.clients.findUserByRole("doctor")) {
-                return true;
-            }
-            game.state = game.states[6];
-            return false;
-        }
-        if (game.state === "police") {
-            if (this.clients.findUserByRole("police")) {
-                return true;
-            }
-            game.state = game.states[7];
-            return false;
-        }
+    checkRoles : function(role) {
+        let user = this.clients.findUserByRole(role);
+        return user.status !== "dead";
     },
     queue : [],
     events : {
         userAction: function(user, action) {
-            console.log(game.state);
+            console.log("game.state", game.state);
+            console.log("action", action);
+            
 
             switch (game.state) {
             case "idle" : 
@@ -230,13 +220,13 @@ let game = {
             let c = game.clients.users.length;
             let roles = [];
 
-            if (c <= 4) {
+            if (c >= 4) {
                 roles.push("police", "mafia", "doctor", "civil");
             } else {
                 throw Error("игроков должно быть минимум 4");
             }
             if (c > 4) {
-                for (let i = c - roles.length; i >= 0; i--) {
+                for (let i = c - roles.length; i > 0; i--) {
                     roles.push("civil");
                 }
             }
@@ -250,8 +240,9 @@ let game = {
             });
 
             console.log(game.clients.users.map((u) => {
- return { name : u.name, role : u.role }
- ;}));
+                return { name : u.name, role : u.role }
+                ;
+            }));
 
             game.clients.users.forEach((u) => {
                 u.send(`Ваша роль: ${  u.role}`);
@@ -270,10 +261,11 @@ let game = {
 
             game.state = game.states[5];
 
-            if (game.checkRoles()) {
+            if (game.checkRoles("doctor")) {
                 game.clients.broadcast("Просыпается доктор и делает свой выбор...");
                 game.clients.broadcast(`Делайте свой выбор: ${  clients.users.filter(u => u.status != "dead").map(u => u.name).join(', ')}`, "doctor");
             } else {
+                game.state = game.states[6];
                 this.doctor();
             }
         },
@@ -284,11 +276,11 @@ let game = {
             if (message) {
                 let d = game.clients.findUser(message);
                 d.status = "cured";
-                game.queue.push(`Ночью был вылечен ${  d.name}`);
+                game.queue.push(`Ночью был вылечен ${d.name}`);
                 game.state = game.states[6];
             }
 
-            if (game.checkRoles()) {
+            if (game.checkRoles("police")) {
                 game.clients.broadcast("Просыпается шериф и делает свой выбор...");
                 game.clients.broadcast(`Делайте свой выбор: ${ game.clients.users.filter(u => u.status != "dead" && u.role != "police").map(u => u.name).join(', ')}`, "police");
             } else {
@@ -339,7 +331,14 @@ let game = {
             game.queue = [];
 
             game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${ game.clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "alive");
-
+            game.clients.broadcast({
+                type : "option",
+                data : game.clients.users.filter((us) => {
+                    return us.status !== "dead";
+                }).map((us) => {
+                    return us.name;
+                })
+            }, "alive");
             game.state = game.states[8];
         },
 
@@ -407,6 +406,17 @@ let game = {
                 game.clients.broadcast(`На голосовании был выбран и убит ${  dead.name}`);
             }
 
+            game.clients.broadcast({
+                type : "info",
+                data : clients.users.filter((user) => {
+                    return user.status !== "dead";
+                }).map((user) => {
+                    return {
+                        name : user.name,
+                        role : user.role
+                    };
+                })
+            });
 
             if (game.isFinnished()) {
                 game.clients.broadcast(`Победили ${game.whoWon()}`);
@@ -418,7 +428,7 @@ let game = {
         },
 
         finnish : function() {
-
+            this.start();
         }
 
 
