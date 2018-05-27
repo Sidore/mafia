@@ -226,9 +226,16 @@ let game = {
             this.sleep();
         },
         sleep: function() {
+
+            let chooseList = clients.users.filter((user) => {
+                return user.role !== "mafia" && user.status !== "dead";
+            }).map((user) => {
+                return user.name;
+            });
+
             game.clients.broadcast("Город засыпает...");
             game.clients.broadcast("Просыпается мафия и делает свой выбор...");
-            game.clients.broadcast(`Делайте свой выбор: ${clients.users.filter(u => u.role !== "mafia" && u.status != "dead").map(u => u.name)}`, "mafia");
+            game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, "mafia");
             game.clients.broadcast({
                 type: "option",
                 data : clients.users.filter((user) => {
@@ -290,8 +297,15 @@ let game = {
             game.state = game.states.DOCTOR;
 
             if (game.checkRoles("doctor")) {
+
+                let chooseList = clients.users.filter((user) => {
+                    return user.status !== "dead";
+                }).map((user) => {
+                    return user.name;
+                });
+
                 game.clients.broadcast("Просыпается доктор и делает свой выбор...");
-                game.clients.broadcast(`Делайте свой выбор: ${  clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "doctor");
+                game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, "doctor");
                 game.clients.broadcast({
                     type: "option",
                     data : clients.users.filter((user) => {
@@ -317,8 +331,14 @@ let game = {
             }
 
             if (game.checkRoles("police")) {
+                let chooseList = game.clients.users.filter((user) => {
+                    return user.status !== "dead" && user.role !== "police";
+                }).map((user) => {
+                    return user.name;
+                });
+
                 game.clients.broadcast("Просыпается шериф и делает свой выбор...");
-                game.clients.broadcast(`Делайте свой выбор: ${ game.clients.users.filter(u => u.status != "dead" && u.role != "police").map(u => u.name)}`, "police");
+                game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, "police");
                 game.clients.broadcast({
                     type: "option",
                     data : clients.users.filter((user) => {
@@ -369,7 +389,13 @@ let game = {
 
             game.queue = [];
 
-            game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${ game.clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "alive");
+            let chooseList = game.clients.users.filter((user) => {
+                return user.status !== "dead";
+            }).map((user) => {
+                return user.name;
+            });
+
+            game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${chooseList}`, "alive");
             game.clients.broadcast({
                 type : "option",
                 data : game.clients.users.filter((us) => {
@@ -483,16 +509,18 @@ let game = {
 console.log("server 8082");
 
 wss.on("connection", (ws) => {
-    let u = clients.addUser(ws);
+    let user = clients.addUser(ws);
 
-    console.log(clients.users.map((u) => {return u.name;}));
+    console.log(clients.users.map((client) => {
+        return client.name;
+    }));
 
     ws.on("message", (message) => {
         let action = JSON.parse(message);
 
-        console.log(u.name, action);
+        console.log(user.name, action);
 
-        game.events.userAction(u, action);
+        game.events.userAction(user, action);
     });
 });
 
