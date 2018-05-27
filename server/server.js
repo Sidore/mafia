@@ -4,11 +4,15 @@ const path = require("path");
 const Vue = require("vue");
 const express = require("express");
 const server = express();
-// const createApp = require("../src/entry-server.js")
+const fs = require("fs");
 const serverBundle = require("../dist/vue-ssr-server-bundle.json");
 const clientManifest = require("../dist/vue-ssr-client-manifest.json");
-
-const renderer = require("vue-server-renderer").createBundleRenderer(serverBundle,{
+const errorCodes = {
+    notFound : 404,
+    intervalError : 500
+};
+const PORT = 8082;
+const renderer = require("vue-server-renderer").createBundleRenderer(serverBundle, {
     runInNewContext: false,
     clientManifest,
     template: require("fs").readFileSync("static/html/index.template.html", "utf-8")
@@ -26,12 +30,12 @@ server.get("*", (req, res) => {
     renderer.renderToString(context, (err, html) => {
         console.log(err);
         if (err) {
-            if (err.code === 404) {
-                let notFound = require("fs").readFileSync("static/html/404.template.html", "utf-8");
-                res.status(404).end(notFound);
+            if (err.code === errorCodes.notFound) {
+                let notFound = fs.readFileSync("static/html/404.template.html", "utf-8");
+                res.status(errorCodes.notFound).end(notFound);
             } else {
-                let serverError = require("fs").readFileSync("static/html/500.template.html", "utf-8")
-                res.status(500).end(serverError);
+                let serverError = fs.readFileSync("static/html/500.template.html", "utf-8");
+                res.status(errorCodes.intervalError).end(serverError);
             }
         } else {
             res.end(html);
@@ -39,7 +43,7 @@ server.get("*", (req, res) => {
     });
 });
 
-server.listen(8082);
+server.listen(PORT);
 
 let clients = {
     counter : 1,
@@ -80,7 +84,6 @@ let clients = {
 
     },
     broadcast : function(message, role = "*") {
-
         let mes = typeof message === "object" ? JSON.stringify(message) : JSON.stringify({ type : "message", data : message });
 
         if (role === "alive") {
@@ -108,21 +111,36 @@ let clients = {
 };
 
 let game = {
-    states : [ "idle", "start", "roles", "sleep", "mafia", "doctor", "police", "beforevoting", "voting", "voted", "finnish" ],
+    states : { IDLE : "idle",
+        START : "start",
+        ROLES : "roles",
+        SLEEP : "sleep",
+        MAFIA : "mafia",
+        DOCTOR : "doctor",
+        POLICE : "police",
+        BEFORE_VOTING : "beforevoting",
+        VOTING : "voting",
+        VOTED : "voted",
+        FINNISH : "finnish" },
     state : "idle",
-    roles : [ "civil", "police", "mafia", "doctor" ],
+    roles : { CIVIL : "civil", POLICE : "police", MAFIA : "mafia", DOCTOR : "doctor" },
     clients,
     voting : {
         _length: 0
+    },
+    constats: {
+        requiredToPlay : 4,
+        requiredToContinue : 2
     },
     isFinnished : function() {
         return !(this.clients.users.some((user) => {
             return user.status !== "dead" && (user.role === "civil" || user.role === "doctor");
         }) && this.clients.users.some((user) => {
             return user.status !== "dead" && user.role === "mafia";
-        })) || this.clients.users.length === 2 && this.clients.users.some((user) => {
-            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor") && this.clients.users.some((user) => {
-                return user.status !== "dead" && user.role === "mafia";
+        })) || this.clients.users.length === this.constats.requiredToContinue && this.clients.users.some((user) => {
+            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor") &&
+            this.clients.users.some((userIn) => {
+                return userIn.status !== "dead" && userIn.role === "mafia";
             });
         });
     },
@@ -140,49 +158,46 @@ let game = {
         userAction: function(user, action) {
             console.log("game.state", game.state);
             console.log("action", action);
-            
-
             switch (game.state) {
-            case "idle" : 
-                if (action.type == "auth" && action.message) {
+            case "idle" :
+                if (action.type === "auth" && action.message) {
                     user.name = action.message;
                     game.clients.broadcast(`Новый игрок ${user.name}`);
-                } else if (action.type == "gamestart" && game.clients.users.length >= 4) {
+                } else if (action.type === "gamestart" && game.clients.users.length >= this.constats.requiredToPlay) {
                     this.start();
                 }
                 break;
             case "start" :break;
             case "roles" :break;
             case "sleep" :break;
-            case "mafia" : {
-                if (action.message && user.role == "mafia") {
+            case "mafia" :
+                if (action.message && user.role === "mafia") {
                     this.mafia(action.message);
                 }
-            } break;
-            case "doctor" : {
-                if (action.message && user.role == "doctor") {
+                break;
+            case "doctor" :
+                if (action.message && user.role === "doctor") {
                     this.doctor(action.message);
                 }
-            } break;
-            case "police" : {
-                if (action.message && user.role == "police") {
+                break;
+            case "police" :
+                if (action.message && user.role === "police") {
                     this.police(action.message, user);
                 }
-            } break;
-            case "voting" : {
+                break;
+            case "voting" :
                 if (action.message) {
                     this.voting(action.message, user);
                 }
-            } break;
+                break;
             case "voted" :break;
             case "finnish" :break;
             default:
-                
             }
         },
 
         start : function() {
-            game.state = game.states[1];
+            game.state = game.states.IDLE;
 
             game.clients.broadcast("Игра началась!");
             game.clients.broadcast({
@@ -206,44 +221,47 @@ let game = {
                 })
             });
 
-            game.state = game.states[3];
+            game.state = game.states.SLEEP;
 
             this.sleep();
         },
         sleep: function() {
             game.clients.broadcast("Город засыпает...");
             game.clients.broadcast("Просыпается мафия и делает свой выбор...");
-            game.clients.broadcast(`Делайте свой выбор: ${clients.users.filter(u => u.role !== "mafia" && u.status != "dead").map(u => u.name).join(', ')}`, "mafia");
+            game.clients.broadcast(`Делайте свой выбор: ${clients.users.filter(u => u.role !== "mafia" && u.status != "dead").map(u => u.name)}`, "mafia");
             game.clients.broadcast({
                 type: "option",
-                data : clients.users.filter((u) => {
-                    return u.role !== "mafia" && u.status !== "dead";
-                }).map((u) => {
-                    return u.name; })
+                data : clients.users.filter((user) => {
+                    return user.role !== "mafia" && user.status !== "dead";
+                }).map((user) => {
+                    return user.name;
+                })
             }, "mafia");
-            game.state = game.states[4];
+            game.state = game.states.MAFIA;
         },
         setRoles : function() {
             console.log("setRoles");
 
-            game.state = game.states[2];
+            game.state = game.states.ROLES;
 
-            let c = game.clients.users.length;
+            let length = game.clients.users.length;
             let roles = [];
 
-            if (c >= 4) {
+            if (length >= this.constats.requiredToPlay) {
                 roles.push("police", "mafia", "doctor", "civil");
             } else {
                 throw Error("игроков должно быть минимум 4");
             }
-            if (c > 4) {
-                for (let i = c - roles.length; i > 0; i--) {
+            if (length > this.constats.requiredToPlay) {
+                for (let count = length - roles.length; count > 0; count--) {
                     roles.push("civil");
                 }
             }
 
             console.log(roles);
-            roles.sort(() => { return 0.5 - Math.random() });
+            roles.sort(() => {
+                return 0.5 - Math.random();
+            });
             console.log(roles);
 
             game.clients.users.forEach((user) => {
@@ -255,35 +273,35 @@ let game = {
                 ;
             }));
 
-            game.clients.users.forEach((u) => {
-                u.send(`Ваша роль: ${  u.role}`);
+            game.clients.users.forEach((user) => {
+                user.send(`Ваша роль: ${user.role}`);
             });
         },
         mafia : function(message) {
             // console.log(message, )
             // game.state = game.states[4];
-            let d = clients.users.find((u) => {return u.name == message});
-            d.status = "shooted";
+            let victim = clients.users.find((user) => {
+                return user.name === message;
+            });
+            victim.status = "shooted";
 
-            game.queue.push(`Ночью был убит ${d.name}`);
+            game.queue.push(`Ночью был убит ${victim.name}`);
 
-            // game.clients.broadcast("Ночью был убит " + d.name);
-
-
-            game.state = game.states[5];
+            game.state = game.states.DOCTOR;
 
             if (game.checkRoles("doctor")) {
                 game.clients.broadcast("Просыпается доктор и делает свой выбор...");
-                game.clients.broadcast(`Делайте свой выбор: ${  clients.users.filter(u => u.status != "dead").map(u => u.name).join(', ')}`, "doctor");
+                game.clients.broadcast(`Делайте свой выбор: ${  clients.users.filter(u => u.status != "dead").map(u => u.name)}`, "doctor");
                 game.clients.broadcast({
                     type: "option",
-                    data : clients.users.filter((u) => {
-                        return u.status !== "dead";
-                    }).map((u) => {
-                        return u.name; })
+                    data : clients.users.filter((user) => {
+                        return user.status !== "dead";
+                    }).map((user) => {
+                        return user.name;
+                    })
                 }, "doctor");
             } else {
-                game.state = game.states[6];
+                game.state = game.states.POLICE;
                 this.doctor();
             }
         },
@@ -292,43 +310,39 @@ let game = {
             // game.state = game.states[4];
 
             if (message) {
-                let d = game.clients.findUser(message);
-                d.status = "cured";
-                game.queue.push(`Ночью был вылечен ${d.name}`);
-                game.state = game.states[6];
+                let cured = game.clients.findUser(message);
+                cured.status = "cured";
+                game.queue.push(`Ночью был вылечен ${cured.name}`);
+                game.state = game.states.BEFORE_VOTING;
             }
 
             if (game.checkRoles("police")) {
                 game.clients.broadcast("Просыпается шериф и делает свой выбор...");
-                game.clients.broadcast(`Делайте свой выбор: ${ game.clients.users.filter(u => u.status != "dead" && u.role != "police").map(u => u.name).join(', ')}`, "police");
+                game.clients.broadcast(`Делайте свой выбор: ${ game.clients.users.filter(u => u.status != "dead" && u.role != "police").map(u => u.name)}`, "police");
                 game.clients.broadcast({
                     type: "option",
-                    data : clients.users.filter((u) => {
-                        return u.status !== "dead" && u.role !== "police";
-                    }).map((u) => {
-                        return u.name; })
+                    data : clients.users.filter((user) => {
+                        return user.status !== "dead" && user.role !== "police";
+                    }).map((user) => {
+                        return user.name;
+                    })
                 }, "police");
             } else {
+                game.state = game.states.BEFORE_VOTING;
                 this.beforeVoting();
             }
         },
         police : function(message, user) {
-            // console.log(message, )
-            // game.state = game.states[4];
-            let d = game.clients.findUser(message);
-            // d.status = "";
-
-
-            let ans = d.role === "mafia" ? "мафия!" : "не мафия";
-            // game.clients.broadcast("Ночью был убит " + d.name);
-            user.send(`${d.name} - ${ans}`);
-            game.state = game.states[7];
+            let suspect = game.clients.findUser(message);
+            let ans = suspect.role === "mafia" ? "мафия!" : "не мафия";
+            user.send(`${suspect.name} - ${ans}`);
+            game.state = game.states.BEFORE_VOTING;
 
             this.beforeVoting();
         },
         beforeVoting : function() {
-            game.queue.forEach((m) => {
-                game.clients.broadcast(m);
+            game.queue.forEach((message) => {
+                game.clients.broadcast(message);
             });
 
             game.clients.forEach((client) => {
@@ -364,7 +378,7 @@ let game = {
                     return us.name;
                 })
             }, "alive");
-            game.state = game.states[8];
+            game.state = game.states.VOTING;
         },
 
         voting : function(message, user) {
@@ -380,8 +394,10 @@ let game = {
                 user.send("Вы уже проголосовали, ожидайте");
             }
 
-            if (game.voting._length === game.clients.users.filter((u) => {return u.status != "dead"}).length) {
-                game.state = game.states[9];
+            if (game.voting._length === game.clients.users.filter((client) => {
+                return client.status !== "dead";
+            }).length) {
+                game.state = game.states.VOTED;
                 this.voted();
             }
         },
@@ -392,16 +408,20 @@ let game = {
 
             console.log(game.voting);
 
-            game.clients.users.filter((u) => {return u.status != "dead"}).forEach((u) => {
-                let name = u.name;
+            game.clients.users.filter((user) => {
+                return user.status !== "dead";
+            }).forEach((user) => {
+                let name = user.name;
                 let vote = game.voting[name];
 
-                let user = results.find((u) => {return u.name == vote});
+                let suspect = results.find((client) => {
+                    return client.name === vote;
+                });
 
-                console.log(name, vote, user);
+                console.log(name, vote, suspect);
 
-                if (user) {
-                    user.count++;
+                if (suspect) {
+                    suspect.count++;
                 } else {
                     results.push({ name : vote, count: 1 });
                 }
@@ -413,12 +433,12 @@ let game = {
 
             console.log(results);
 
-            results.forEach((u) => {
-                dead = !dead ? u : dead.count < u.count ? u : dead;
+            results.forEach((user) => {
+                dead = !dead ? user : dead.count < user.count ? user : dead;
             });
 
-            if (results.some((u) => {
-                return u != dead && u.count == dead.count;
+            if (results.some((user) => {
+                return user !== dead && user.count === dead.count;
             })) {
                 game.clients.broadcast("На голосовании совпали голоса и никто не выбывает");
             } else {
@@ -428,7 +448,7 @@ let game = {
 
                 dead.status = "dead";
 
-                game.clients.broadcast(`На голосовании был выбран и убит ${  dead.name}`);
+                game.clients.broadcast(`На голосовании был выбран и убит ${dead.name}`);
             }
 
             game.clients.broadcast({
