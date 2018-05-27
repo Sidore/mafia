@@ -8,4 +8,5 @@ export default { IDLE : "idle",
     BEFORE_VOTING : "beforevoting",
     VOTING : "voting",
     VOTED : "voted",
-    FINNISH : "finnish" };
+    FINNISH : "finnish"
+};
