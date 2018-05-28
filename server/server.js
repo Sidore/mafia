@@ -7,15 +7,16 @@ const server = express();
 const fs = require("fs");
 const serverBundle = require("../dist/vue-ssr-server-bundle.json");
 const clientManifest = require("../dist/vue-ssr-client-manifest.json");
+const serverRenderer = require("vue-server-renderer");
 const errorCodes = {
     notFound : 404,
     intervalError : 500
 };
 const PORT = 8082;
-const renderer = require("vue-server-renderer").createBundleRenderer(serverBundle, {
+const renderer = serverRenderer.createBundleRenderer(serverBundle, {
     runInNewContext: false,
     clientManifest,
-    template: require("fs").readFileSync("static/html/index.template.html", "utf-8")
+    template: fs.readFileSync("static/html/index.template.html", "utf-8")
 });
 
 server.use("/dist", express.static("dist"));
@@ -163,7 +164,7 @@ let game = {
                 if (action.type === "auth" && action.message) {
                     user.name = action.message;
                     game.clients.broadcast(`Новый игрок ${user.name}`);
-                } else if (action.type === "gamestart" && game.clients.users.length >= this.constats.requiredToPlay) {
+                } else if (action.type === "gamestart" && game.clients.users.length >= game.constats.requiredToPlay) {
                     this.start();
                 }
                 break;
@@ -226,7 +227,6 @@ let game = {
             this.sleep();
         },
         sleep: function() {
-
             let chooseList = clients.users.filter((user) => {
                 return user.role !== "mafia" && user.status !== "dead";
             }).map((user) => {
@@ -254,12 +254,12 @@ let game = {
             let length = game.clients.users.length;
             let roles = [];
 
-            if (length >= this.constats.requiredToPlay) {
+            if (length >= game.constats.requiredToPlay) {
                 roles.push("police", "mafia", "doctor", "civil");
             } else {
                 throw Error("игроков должно быть минимум 4");
             }
-            if (length > this.constats.requiredToPlay) {
+            if (length > game.constats.requiredToPlay) {
                 for (let count = length - roles.length; count > 0; count--) {
                     roles.push("civil");
                 }
@@ -275,8 +275,8 @@ let game = {
                 user.role = roles.pop();
             });
 
-            console.log(game.clients.users.map((u) => {
-                return { name : u.name, role : u.role }
+            console.log(game.clients.users.map((user) => {
+                return { name : user.name, role : user.role }
                 ;
             }));
 
@@ -297,7 +297,6 @@ let game = {
             game.state = game.states.DOCTOR;
 
             if (game.checkRoles("doctor")) {
-
                 let chooseList = clients.users.filter((user) => {
                     return user.status !== "dead";
                 }).map((user) => {
@@ -327,7 +326,7 @@ let game = {
                 let cured = game.clients.findUser(message);
                 cured.status = "cured";
                 game.queue.push(`Ночью был вылечен ${cured.name}`);
-                game.state = game.states.BEFORE_VOTING;
+                game.state = game.states.POLICE;
             }
 
             if (game.checkRoles("police")) {
@@ -353,10 +352,10 @@ let game = {
             }
         },
         police : function(message, user) {
+            game.state = game.states.POLICE;
             let suspect = game.clients.findUser(message);
             let ans = suspect.role === "mafia" ? "мафия!" : "не мафия";
             user.send(`${suspect.name} - ${ans}`);
-            game.state = game.states.BEFORE_VOTING;
 
             this.beforeVoting();
         },
