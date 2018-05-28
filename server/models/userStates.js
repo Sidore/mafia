@@ -1,6 +1,6 @@
-export default {
-    CIVIL : "civil",
-    POLICE : "police",
-    MAFIA : "mafia",
-    DOCTOR : "doctor"
+module.exports = {
+    ALIVE : "alive",
+    DEAD : "dead",
+    CURED : "cured",
+    SHOOTED : "shooted"
 };

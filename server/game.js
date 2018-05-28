@@ -1,19 +1,21 @@
-import clients from "./client";
-import states from "./models/gameStates";
-import roles from "./models/userStates";
-import gameConfig from "./config/game.config";
-import gameEvents from "./models/gameEvents";
+const Clients = require("./client");
+const states = require("./models/gameStates");
+const roles = require("./models/userRoles");
+const userStates = require("./models/userStates");
+const gameConfig = require("./config/game.config");
+const gameEvents = require("./models/gameEvents");
+const messages = require("./models/messageStates");
 
 let events = {
     userAction: function(user, action) {
-        console.log("game.state", this.state);
-        console.log("action", action);
-        switch (this.state) {
+        console.log("game.state", this.game.state);
+
+        switch (this.game.state) {
         case "idle" :
-            if (action.type === "auth" && action.message) {
+            if (action.type === messages.AUTH && action.message) {
                 user.name = action.message;
-                this.clients.broadcast(`Новый игрок ${user.name}`);
-            } else if (action.type === "gamestart" && this.clients.users.length >= this.constats.requiredToPlay) {
+                this.game.clients.broadcast(`Новый игрок ${user.name}`);
+            } else if (action.type === messages.GAME_START && this.game.clients.users.length >= gameConfig.requiredToPlay) {
                 this.start();
             }
             break;
@@ -21,17 +23,17 @@ let events = {
         case "roles" :break;
         case "sleep" :break;
         case "mafia" :
-            if (action.message && user.role === "mafia") {
+            if (action.message && user.role === roles.MAFIA) {
                 this.mafia(action.message);
             }
             break;
         case "doctor" :
-            if (action.message && user.role === "doctor") {
+            if (action.message && user.role === roles.DOCTOR) {
                 this.doctor(action.message);
             }
             break;
         case "police" :
-            if (action.message && user.role === "police") {
+            if (action.message && user.role === roles.POLICE) {
                 this.police(action.message, user);
             }
             break;
@@ -46,23 +48,23 @@ let events = {
         }
     },
     start : function() {
-        this.state = this.states.IDLE;
+        this.game.state = this.game.states.IDLE;
 
-        this.clients.broadcast("Игра началась!");
-        this.clients.broadcast({
-            type : "gamestart",
+        this.game.clients.broadcast("Игра началась!");
+        this.game.clients.broadcast({
+            type : messages.GAME_START,
             data: "Игра началась!"
         });
 
-        this.clients.forEach((client) => {
-            client.status = "alive";
+        this.game.clients.forEach((client) => {
+            client.status = userStates.ALIVE;
         });
 
-        this.events.setRoles();
+        this.setRoles();
 
-        this.clients.broadcast({
-            type : "info",
-            data : clients.users.map((user) => {
+        this.game.clients.broadcast({
+            type : messages.INFO,
+            data : this.game.clients.users.map((user) => {
                 return {
                     name : user.name,
                     role : user.role
@@ -70,162 +72,158 @@ let events = {
             })
         });
 
-        this.state = this.states.SLEEP;
+        this.game.state = this.game.states.SLEEP;
 
         this.sleep();
     },
     sleep: function() {
-        let chooseList = clients.users.filter((user) => {
-            return user.role !== "mafia" && user.status !== "dead";
+        let chooseList = this.game.clients.users.filter((user) => {
+            return user.role !== roles.MAFIA && user.status !== userStates.DEAD;
         }).map((user) => {
             return user.name;
         });
 
-        this.clients.broadcast("Город засыпает...");
-        this.clients.broadcast("Просыпается мафия и делает свой выбор...");
-        this.clients.broadcast(`Делайте свой выбор: ${chooseList}`, "mafia");
-        this.clients.broadcast({
-            type: "option",
-            data : clients.users.filter((user) => {
-                return user.role !== "mafia" && user.status !== "dead";
+        this.game.clients.broadcast("Город засыпает...");
+        this.game.clients.broadcast("Просыпается мафия и делает свой выбор...");
+        this.game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, roles.MAFIA);
+        this.game.clients.broadcast({
+            type: messages.OPTION,
+            data : this.game.clients.users.filter((user) => {
+                return user.role !== roles.MAFIA && user.status !== userStates.DEAD;
             }).map((user) => {
                 return user.name;
             })
-        }, "mafia");
-        this.state = this.states.MAFIA;
+        }, roles.MAFIA);
+        this.game.state = this.game.states.MAFIA;
     },
     setRoles : function() {
-        console.log("setRoles");
+        this.game.state = this.game.states.ROLES;
 
-        this.state = this.states.ROLES;
+        let length = this.game.clients.users.length;
+        let rolesList = [];
 
-        let length = this.clients.users.length;
-        let roles = [];
-
-        if (length >= this.constats.requiredToPlay) {
-            roles.push("police", "mafia", "doctor", "civil");
+        if (length >= gameConfig.requiredToPlay) {
+            rolesList.push(roles.POLICE, roles.MAFIA, roles.DOCTOR, roles.CIVIL);
         } else {
             throw Error("игроков должно быть минимум 4");
         }
-        if (length > this.constats.requiredToPlay) {
-            for (let count = length - roles.length; count > 0; count--) {
-                roles.push("civil");
+        if (length > gameConfig.requiredToPlay) {
+            for (let count = length - rolesList.length; count; count--) {
+                rolesList.push(roles.CIVIL);
             }
         }
 
-        console.log(roles);
-        roles.sort(() => {
-            return 0.5 - Math.random();
-        });
-        console.log(roles);
+        let seed = 0.5;
 
-        this.clients.users.forEach((user) => {
-            user.role = roles.pop();
+        console.log(rolesList);
+        rolesList.sort(() => {
+            return seed - Math.random();
+        });
+        console.log(rolesList);
+
+        this.game.clients.users.forEach((user) => {
+            user.role = rolesList.pop();
         });
 
-        console.log(this.clients.users.map((u) => {
-            return { name : u.name, role : u.role }
-            ;
+        console.log(this.game.clients.users.map((user) => {
+            return { name : user.name, role : user.role };
         }));
 
-        this.clients.users.forEach((user) => {
+        this.game.clients.users.forEach((user) => {
             user.send(`Ваша роль: ${user.role}`);
         });
     },
     mafia : function(message) {
         // console.log(message, )
-        // this.state = this.states[4];
-        let victim = clients.users.find((user) => {
+        // this.game.state = this.game.states[4];
+        let victim = this.game.clients.users.find((user) => {
             return user.name === message;
         });
-        victim.status = "shooted";
+        victim.status = userStates.SHOOTED;
 
-        this.queue.push(`Ночью был убит ${victim.name}`);
+        this.game.queue.push(`Ночью был убит ${victim.name}`);
 
-        this.state = this.states.DOCTOR;
+        this.game.state = this.game.states.DOCTOR;
 
-        if (this.checkRoles("doctor")) {
-            let chooseList = clients.users.filter((user) => {
-                return user.status !== "dead";
+        if (this.game.checkRoles(roles.DOCTOR)) {
+            let chooseList = this.game.clients.users.filter((user) => {
+                return user.status !== states.DEAD;
             }).map((user) => {
                 return user.name;
             });
 
-            this.clients.broadcast("Просыпается доктор и делает свой выбор...");
-            this.clients.broadcast(`Делайте свой выбор: ${chooseList}`, "doctor");
-            this.clients.broadcast({
-                type: "option",
-                data : clients.users.filter((user) => {
-                    return user.status !== "dead";
+            this.game.clients.broadcast("Просыпается доктор и делает свой выбор...");
+            this.game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, roles.DOCTOR);
+            this.game.clients.broadcast({
+                type: messages.OPTION,
+                data : this.game.clients.users.filter((user) => {
+                    return user.status !== states.DEAD;
                 }).map((user) => {
                     return user.name;
                 })
-            }, "doctor");
+            }, roles.DOCTOR);
         } else {
-            this.state = this.states.POLICE;
+            this.game.state = this.game.states.POLICE;
             this.doctor();
         }
     },
     doctor : function(message) {
-        // console.log(message, )
-        // this.state = this.states[4];
-
         if (message) {
-            let cured = this.clients.findUser(message);
-            cured.status = "cured";
-            this.queue.push(`Ночью был вылечен ${cured.name}`);
-            this.state = this.states.BEFORE_VOTING;
+            let cured = this.game.clients.findUser(message);
+            cured.status = userStates.CURED;
+            this.game.queue.push(`Ночью был вылечен ${cured.name}`);
+            this.game.state = this.game.states.POLICE;
         }
 
-        if (this.checkRoles("police")) {
-            let chooseList = this.clients.users.filter((user) => {
-                return user.status !== "dead" && user.role !== "police";
+        if (this.game.checkRoles(roles.POLICE)) {
+            let chooseList = this.game.clients.users.filter((user) => {
+                return user.status !== states.DEAD && user.role !== roles.POLICE;
             }).map((user) => {
                 return user.name;
             });
 
-            this.clients.broadcast("Просыпается шериф и делает свой выбор...");
-            this.clients.broadcast(`Делайте свой выбор: ${chooseList}`, "police");
-            this.clients.broadcast({
-                type: "option",
-                data : clients.users.filter((user) => {
-                    return user.status !== "dead" && user.role !== "police";
+            this.game.clients.broadcast("Просыпается шериф и делает свой выбор...");
+            this.game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, roles.POLICE);
+            this.game.clients.broadcast({
+                type: messages.OPTION,
+                data : this.game.clients.users.filter((user) => {
+                    return user.status !== states.DEAD && user.role !== roles.POLICE;
                 }).map((user) => {
                     return user.name;
                 })
-            }, "police");
+            }, roles.POLICE);
         } else {
-            this.state = this.states.BEFORE_VOTING;
+            this.game.state = this.game.states.BEFORE_VOTING;
             this.beforeVoting();
         }
     },
     police : function(message, user) {
-        let suspect = this.clients.findUser(message);
-        let ans = suspect.role === "mafia" ? "мафия!" : "не мафия";
+        let suspect = this.game.clients.findUser(message);
+        let ans = suspect.role === roles.MAFIA ? "мафия!" : "не мафия";
         user.send(`${suspect.name} - ${ans}`);
-        this.state = this.states.BEFORE_VOTING;
+        this.game.state = this.game.states.BEFORE_VOTING;
 
         this.beforeVoting();
     },
     beforeVoting : function() {
-        this.queue.forEach((message) => {
-            this.clients.broadcast(message);
+        this.game.queue.forEach((message) => {
+            this.game.clients.broadcast(message);
         });
 
-        this.clients.forEach((client) => {
-            if (client.status === "shooted") {
-                client.status = "dead";
+        this.game.clients.forEach((client) => {
+            if (client.status === userStates.SHOOTED) {
+                client.status = userStates.DEAD;
             }
 
-            if (client.status === "cured") {
-                client.status = "alive";
+            if (client.status === userStates.CURED) {
+                client.status = userStates.ALIVE;
             }
         });
 
-        this.clients.broadcast({
-            type : "info",
-            data : clients.users.filter((user) => {
-                return user.status !== "dead";
+        this.game.clients.broadcast({
+            type : messages.INFO,
+            data : this.game.clients.users.filter((user) => {
+                return user.status !== userStates.DEAD;
             }).map((user) => {
                 return {
                     name : user.name,
@@ -234,31 +232,34 @@ let events = {
             })
         });
 
-        this.queue = [];
+        this.game.queue = [];
 
-        let chooseList = this.clients.users.filter((user) => {
-            return user.status !== "dead";
+        let chooseList = this.game.clients.users.filter((user) => {
+            return user.status !== userStates.DEAD;
         }).map((user) => {
             return user.name;
         });
 
-        this.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${chooseList}`, "alive");
-        this.clients.broadcast({
-            type : "option",
-            data : this.clients.users.filter((us) => {
-                return us.status !== "dead";
+        this.game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${chooseList}`, userStates.ALIVE);
+        this.game.clients.broadcast({
+            type : messages.OPTION,
+            data : this.game.clients.users.filter((us) => {
+                return us.status !== userStates.DEAD;
             }).map((us) => {
                 return us.name;
             })
-        }, "alive");
-        this.state = this.states.VOTING;
+        }, userStates.ALIVE);
+        this.game.state = this.game.states.VOTING;
     },
     voting : function(message, user) {
-        if (!this.voting[user.name]) {
-            let goal = this.clients.findUser(message);
+        console.log(this.game.voting._length + 1, "/", this.game.clients.users.filter((client) => {
+            return client.status !== userStates.DEAD;
+        }).length);
+        if (!this.game.voting[user.name]) {
+            let goal = this.game.clients.findUser(message);
             if (goal) {
-                this.voting[user.name] = message;
-                this.voting._length++;
+                this.game.voting[user.name] = message;
+                this.game.voting._length++;
             } else {
                 user.send("Такого игрока нет, повторите");
             }
@@ -266,10 +267,10 @@ let events = {
             user.send("Вы уже проголосовали, ожидайте");
         }
 
-        if (this.voting._length === this.clients.users.filter((client) => {
-            return client.status !== "dead";
+        if (this.game.voting._length === this.game.clients.users.filter((client) => {
+            return client.status !== userStates.DEAD;
         }).length) {
-            this.state = this.states.VOTED;
+            this.game.state = this.game.states.VOTED;
             this.voted();
         }
     },
@@ -277,19 +278,17 @@ let events = {
         let results = [];
         let dead = null;
 
-        console.log(this.voting);
+        console.log(this.game.voting);
 
-        this.clients.users.filter((user) => {
-            return user.status !== "dead";
+        this.game.clients.users.filter((user) => {
+            return user.status !== userStates.DEAD;
         }).forEach((user) => {
             let name = user.name;
-            let vote = this.voting[name];
+            let vote = this.game.voting[name];
 
             let suspect = results.find((client) => {
                 return client.name === vote;
             });
-
-            console.log(name, vote, suspect);
 
             if (suspect) {
                 suspect.count++;
@@ -298,11 +297,9 @@ let events = {
             }
         });
 
-        this.voting = {
+        this.game.voting = {
             _length: 0
         };
-
-        console.log(results);
 
         results.forEach((user) => {
             dead = !dead ? user : dead.count < user.count ? user : dead;
@@ -311,21 +308,21 @@ let events = {
         if (results.some((user) => {
             return user !== dead && user.count === dead.count;
         })) {
-            this.clients.broadcast("На голосовании совпали голоса и никто не выбывает");
+            this.game.clients.broadcast("На голосовании совпали голоса и никто не выбывает");
         } else {
             console.log(dead);
 
-            dead = this.clients.findUser(dead.name);
+            dead = this.game.clients.findUser(dead.name);
 
-            dead.status = "dead";
+            dead.status = userStates.DEAD;
 
-            this.clients.broadcast(`На голосовании был выбран и убит ${dead.name}`);
+            this.game.clients.broadcast(`На голосовании был выбран и убит ${dead.name}`);
         }
 
-        this.clients.broadcast({
-            type : "info",
-            data : clients.users.filter((user) => {
-                return user.status !== "dead";
+        this.game.clients.broadcast({
+            type : messages.INFO,
+            data : this.game.clients.users.filter((user) => {
+                return user.status !== userStates.DEAD;
             }).map((user) => {
                 return {
                     name : user.name,
@@ -334,8 +331,8 @@ let events = {
             })
         });
 
-        if (this.isFinnished()) {
-            this.clients.broadcast(`Победили ${this.whoWon()}`);
+        if (this.game.isFinnished()) {
+            this.game.clients.broadcast(`Победили ${this.game.whoWon()}`);
 
             this.finnish();
         } else {
@@ -352,36 +349,37 @@ class Game {
         this.states = states;
         this.state = states.IDLE;
         this.roles = roles;
-        this.clients = clients;
+        this.clients = new Clients();
         this.queue = [];
         this.voting = {
             _length: 0
         };
         this.constats = gameConfig;
         this.events = events;
+        this.events.game = this;
     }
     isFinnished() {
         return !(this.clients.users.some((user) => {
-            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor");
+            return user.status !== userStates.DEAD && (user.role === roles.CIVIL || user.role === roles.DOCTOR);
         }) && this.clients.users.some((user) => {
-            return user.status !== "dead" && user.role === "mafia";
+            return user.status !== userStates.DEAD && user.role === roles.MAFIA;
         })) || this.clients.users.length === this.constats.requiredToContinue && this.clients.users.some((user) => {
-            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor") &&
+            return user.status !== userStates.DEAD && (user.role === roles.CIVIL || user.role === roles.DOCTOR) &&
                 this.clients.users.some((userIn) => {
-                    return userIn.status !== "dead" && userIn.role === "mafia";
+                    return userIn.status !== userStates.DEAD && userIn.role === roles.MAFIA;
                 });
         });
     }
     whoWon() {
         return this.clients.users.some((user) => {
-            return user.status !== "dead" && (user.role === "civil" || user.role === "doctor");
-        }) ? "civil" : "mafia";
+            return user.status !== userStates.DEAD && (user.role === roles.CIVIL || user.role === roles.DOCTOR);
+        }) ? roles.CIVIL : roles.MAFIA;
     }
     checkRoles(role) {
         let user = this.clients.findUserByRole(role);
-        return user.status !== "dead";
+        return user.status !== userStates.DEAD;
     }
 }
 
-export default Game;
+module.exports = Game;
 

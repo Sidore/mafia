@@ -1,13 +1,13 @@
 
-let counter = 1;
 class User {
-    constructor(ws) {
+    constructor(ws, counter) {
         this.ws = ws;
-        this.name = `user ${counter++}`;
+        this.name = `user ${counter}`;
         this.role = "none";
         this.status = "alive";
     }
     send(message) {
+        console.log("user.send", message);
         let mes = typeof message === "object" ?
             JSON.stringify(message) :
             JSON.stringify({ type: "message", data: message });
@@ -16,4 +16,4 @@ class User {
 }
 
 
-export default User;
+module.exports = User;

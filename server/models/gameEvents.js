@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     USER_ACTION : "userAction",
     START : "start",
     SET_ROLES : "setRoles",

@@ -1,48 +1,37 @@
-
-let clients = {
-    counter : 1,
-    users : [],
-    addUser : function(ws) {
-        let user = {
-            ws,
-            name : `user ${this.counter++}`,
-            role : "none",
-            status : "alive",
-            send : function(message) {
-                let mes = typeof message === "object" ?
-                    JSON.stringify(message) :
-                    JSON.stringify({ type : "message", data : message });
-                this.ws.send(mes);
-            }
-        };
-
+const User = require("./models/user");
+const userStates = require("./models/userStates");
+const messages = require("./models/messageStates");
+class ClientManager {
+    constructor() {
+        this.counter = 1;
+        this.users = [];
+    }
+    addUser(ws) {
+        let user = new User(ws, this.counter);
         this.users.push(user);
         return user;
-    },
-    removeUser : function(ws) {
+    }
+    removeUser(ws) {
         this.users.find((user) => {
-
         });
-    },
-    findUser : function(message) {
-        return clients.users.find((user) => {
+    }
+    findUser(message) {
+        return this.users.find((user) => {
             return user.name === message;
         });
-    },
-    findUserByRole : function(role) {
-        return clients.users.find((user) => {
+    }
+    findUserByRole(role) {
+        return this.users.find((user) => {
             return user.role === role;
         });
-    },
-    findUsers : function() {
-
-    },
-    broadcast : function(message, role = "*") {
-        let mes = typeof message === "object" ? JSON.stringify(message) : JSON.stringify({ type : "message", data : message });
-
-        if (role === "alive") {
+    }
+    findUsers() {
+    }
+    broadcast(message, role = "*") {
+        let mes = typeof message === "object" ? JSON.stringify(message) : JSON.stringify({ type: messages.MESSAGE, data: message });
+        if (role === userStates.ALIVE) {
             this.users.filter((user) => {
-                return user.status !== "dead";
+                return user.status !== userStates.DEAD;
             }).map((user) => {
                 return user.ws;
             }).forEach((user) => {
@@ -57,11 +46,11 @@ let clients = {
                 return user.send(mes);
             });
         }
-    },
-    send : function() {},
-    forEach : function(callback) {
+    }
+    send() { }
+    forEach(callback) {
         this.users.forEach(callback);
     }
-};
+}
 
-export default clients;
+module.exports = ClientManager;
