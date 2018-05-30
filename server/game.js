@@ -359,16 +359,18 @@ class Game {
         this.events.game = this;
     }
     isFinnished() {
-        return !(this.clients.users.some((user) => {
-            return user.status !== userStates.DEAD && (user.role === roles.CIVIL || user.role === roles.DOCTOR);
-        }) && this.clients.users.some((user) => {
-            return user.status !== userStates.DEAD && user.role === roles.MAFIA;
-        })) || this.clients.users.length === this.constats.requiredToContinue && this.clients.users.some((user) => {
-            return user.status !== userStates.DEAD && (user.role === roles.CIVIL || user.role === roles.DOCTOR) &&
-                this.clients.users.some((userIn) => {
-                    return userIn.status !== userStates.DEAD && userIn.role === roles.MAFIA;
-                });
+        let enoughPlayers = this.clients.users.filter((user) => {
+            return user.status !== userStates.DEAD;
+        }).length > gameConfig.requiredToContinue;
+
+        let mafiaPresence = this.clients.users.some((user) => {
+            return user.role === roles.MAFIA;
         });
+
+        if (enoughPlayers && mafiaPresence) {
+            return true;
+        }
+        return false;
     }
     whoWon() {
         return this.clients.users.some((user) => {

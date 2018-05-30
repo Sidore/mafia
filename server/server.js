@@ -9,10 +9,8 @@ const serverBundle = require("../dist/vue-ssr-server-bundle.json");
 const clientManifest = require("../dist/vue-ssr-client-manifest.json");
 const serverRenderer = require("vue-server-renderer");
 
-const ClientManager = require("./client");
 const GameManager = require("./game");
 
-// let clients = new ClientManager();
 let game = new GameManager();
 
 const errorCodes = {
@@ -53,9 +51,7 @@ server.get("*", (req, res) => {
 
 server.listen(PORT);
 
-
-
-console.log("server 8082");
+console.log(`server ${PORT}`);
 
 wss.on("connection", (ws) => {
     let user = game.clients.addUser(ws);

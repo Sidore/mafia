@@ -1,4 +1,4 @@
 module.exports = {
     requiredToPlay : 4,
-    requiredToContinue : 2
+    requiredToContinue : 3
 };

@@ -32,22 +32,17 @@ class ClientManager {
         if (role === userStates.ALIVE) {
             this.users.filter((user) => {
                 return user.status !== userStates.DEAD;
-            }).map((user) => {
-                return user.ws;
             }).forEach((user) => {
                 return user.send(mes);
             });
         } else {
             this.users.filter((user) => {
                 return role === "*" || user.role === role;
-            }).map((user) => {
-                return user.ws;
             }).forEach((user) => {
                 return user.send(mes);
             });
         }
     }
-    send() { }
     forEach(callback) {
         this.users.forEach(callback);
     }
