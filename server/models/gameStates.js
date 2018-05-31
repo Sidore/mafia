@@ -1,4 +1,5 @@
-module.exports = { IDLE : "idle",
+module.exports = {
+    IDLE : "idle",
     START : "start",
     ROLES : "roles",
     SLEEP : "sleep",

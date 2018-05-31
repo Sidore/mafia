@@ -1,4 +1,9 @@
 {
     "presets": ["es2017"],
-    "plugins": ["syntax-dynamic-import"]
+    "plugins": ["syntax-dynamic-import"],
+    "env": {
+    "test": {
+      "plugins": ["transform-es2015-modules-commonjs"]
+    }
+  }
 }

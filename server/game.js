@@ -367,15 +367,12 @@ class Game {
             return user.role === roles.MAFIA;
         });
 
-        if (enoughPlayers && mafiaPresence) {
-            return true;
-        }
-        return false;
+        return !(enoughPlayers && mafiaPresence);
     }
     whoWon() {
         return this.clients.users.some((user) => {
-            return user.status !== userStates.DEAD && (user.role === roles.CIVIL || user.role === roles.DOCTOR);
-        }) ? roles.CIVIL : roles.MAFIA;
+            return user.status !== userStates.DEAD && user.role === roles.MAFIA;
+        }) ? roles.MAFIA : roles.CIVIL;
     }
     checkRoles(role) {
         let user = this.clients.findUserByRole(role);

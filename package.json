@@ -4,7 +4,7 @@
   "description": "the game",
   "main": "index.js",
   "scripts": {
-    "test": "karma start karma.conf.js --log-level debug",
+    "test": "jest",
     "dev": "nodemon ./server/server.js",
     "build": "rimraf dist && npm run build:client && npm run build:server",
     "build:client": "cross-env NODE_ENV=production webpack --config webpack/client.webpack.config.js --progress --hide-modules",
@@ -13,12 +13,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "babel-jest": "^23.0.1",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "babel-preset-es2017": "^6.24.1",
-    "jasmine-core": "^3.1.0",
-    "karma": "^2.0.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-jasmine": "^1.1.1",
+    "jest": "^23.0.1",
+    "jest-vue-preprocessor": "^1.4.0",
     "nodemon": "^1.14.12",
     "webpack-cli": "^2.0.12",
     "ws": "^4.0.0"
@@ -52,5 +51,18 @@
     "webpack": "^4.1.1",
     "webpack-merge": "^4.1.2",
     "webpack-node-externals": "^1.6.0"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^vue$": "vue/dist/vue.common.js"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "vue"
+    ],
+    "transform": {
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
+      ".*\\.(vue)$": "<rootDir>/node_modules/jest-vue-preprocessor"
+    }
   }
 }
