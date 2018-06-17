@@ -55,7 +55,10 @@ module.exports = {
     devtool: "eval",
     resolve: {
         alias: {
-            "@components" : path.resolve(__dirname, "../", "src", "components")
+            "@src" : path.resolve(__dirname, "../", "src"),
+            "@components" : path.resolve(__dirname, "../", "src", "components"),
+            "@static" : path.resolve(__dirname, "../", "static"),
+            "@server" : path.resolve(__dirname, "../", "server")
         },
         extensions: [ ".vue", ".js", ".json", ".scss", ".styl", "*" ]
     }
