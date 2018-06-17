@@ -34,8 +34,9 @@ server.get("*", (req, res) => {
 
     //   createApp(context).then(app => {
     renderer.renderToString(context, (err, html) => {
-        console.log(err);
         if (err) {
+            console.warn(req.url, err);
+
             if (err.code === errorCodes.notFound) {
                 let notFound = fs.readFileSync("static/html/404.template.html", "utf-8");
                 res.status(errorCodes.notFound).end(notFound);
@@ -56,14 +57,14 @@ console.log(`server ${PORT}`);
 wss.on("connection", (ws) => {
     let user = game.clients.addUser(ws);
 
-    console.log(game.clients.users.map((client) => {
+    console.log("array of users:", game.clients.users.map((client) => {
         return client.name;
     }));
 
     ws.on("message", (message) => {
         let action = JSON.parse(message);
 
-        console.log(user.name, action);
+        console.log("user action:", user.name, action);
 
         game.events.userAction(user, action);
     });

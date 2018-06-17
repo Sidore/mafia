@@ -57,6 +57,6 @@ module.exports = {
         alias: {
             "@components" : path.resolve(__dirname, "../", "src", "components")
         },
-        extensions: [ ".vue", ".js", ".json", ".styl", "*" ]
+        extensions: [ ".vue", ".js", ".json", ".scss", ".styl", "*" ]
     }
 };

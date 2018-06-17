@@ -48,8 +48,7 @@ let events = {
         }
     },
     start : function() {
-        this.game.state = this.game.states.IDLE;
-
+        this.game.changeState(this.game.states.IDLE);
         this.game.clients.broadcast("Игра началась!");
         this.game.clients.broadcast({
             type : messages.GAME_START,
@@ -72,7 +71,7 @@ let events = {
             })
         });
 
-        this.game.state = this.game.states.SLEEP;
+        this.game.changeState(this.game.states.SLEEP);
 
         this.sleep();
     },
@@ -94,10 +93,11 @@ let events = {
                 return user.name;
             })
         }, roles.MAFIA);
-        this.game.state = this.game.states.MAFIA;
+
+        this.game.changeState(this.game.states.MAFIA);
     },
     setRoles : function() {
-        this.game.state = this.game.states.ROLES;
+        this.game.changeState(this.game.states.ROLES);
 
         let length = this.game.clients.users.length;
         let rolesList = [];
@@ -143,7 +143,7 @@ let events = {
 
         this.game.queue.push(`Ночью был убит ${victim.name}`);
 
-        this.game.state = this.game.states.DOCTOR;
+        this.game.changeState(this.game.states.DOCTOR);
 
         if (this.game.checkRoles(roles.DOCTOR)) {
             let chooseList = this.game.clients.users.filter((user) => {
@@ -163,7 +163,8 @@ let events = {
                 })
             }, roles.DOCTOR);
         } else {
-            this.game.state = this.game.states.POLICE;
+            this.game.changeState(this.game.states.POLICE);
+
             this.doctor();
         }
     },
@@ -172,7 +173,7 @@ let events = {
             let cured = this.game.clients.findUser(message);
             cured.status = userStates.CURED;
             this.game.queue.push(`Ночью был вылечен ${cured.name}`);
-            this.game.state = this.game.states.POLICE;
+            this.game.changeState(this.game.states.POLICE);
         }
 
         if (this.game.checkRoles(roles.POLICE)) {
@@ -193,7 +194,7 @@ let events = {
                 })
             }, roles.POLICE);
         } else {
-            this.game.state = this.game.states.BEFORE_VOTING;
+            this.game.changeState(this.game.states.BEFORE_VOTING);
             this.beforeVoting();
         }
     },
@@ -201,7 +202,7 @@ let events = {
         let suspect = this.game.clients.findUser(message);
         let ans = suspect.role === roles.MAFIA ? "мафия!" : "не мафия";
         user.send(`${suspect.name} - ${ans}`);
-        this.game.state = this.game.states.BEFORE_VOTING;
+        this.game.changeState(this.game.states.BEFORE_VOTING);
 
         this.beforeVoting();
     },
@@ -249,10 +250,10 @@ let events = {
                 return us.name;
             })
         }, userStates.ALIVE);
-        this.game.state = this.game.states.VOTING;
+        this.game.changeState(this.game.states.VOTING);
     },
     voting : function(message, user) {
-        console.log(this.game.voting._length + 1, "/", this.game.clients.users.filter((client) => {
+        console.log(this.game.voting._length + 1 + " / " + this.game.clients.users.filter((client) => {
             return client.status !== userStates.DEAD;
         }).length);
         if (!this.game.voting[user.name]) {
@@ -270,7 +271,8 @@ let events = {
         if (this.game.voting._length === this.game.clients.users.filter((client) => {
             return client.status !== userStates.DEAD;
         }).length) {
-            this.game.state = this.game.states.VOTED;
+            this.game.changeState(this.game.states.VOTED);
+
             this.voted();
         }
     },
@@ -377,6 +379,11 @@ class Game {
     checkRoles(role) {
         let user = this.clients.findUserByRole(role);
         return user.status !== userStates.DEAD;
+    }
+
+    changeState(to) {
+        console.log(`Game state: ${this.state} --> ${to}`);
+        this.state = to;
     }
 }
 

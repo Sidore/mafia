@@ -9,7 +9,10 @@ class User {
     send(message) {
         this.ws.send(message);
     }
+    changeStatus(to) {
+        console.log(`User ${this.name} status: ${this.status} --> ${to}`);
+        this.status = to;
+    }
 }
-
 
 module.exports = User;
