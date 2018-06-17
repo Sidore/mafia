@@ -2,11 +2,11 @@
     div#users
         h3 Сейчас играют:
         div.players
-            div(v-if="users" , v-for="user in users" :key="user").userCard
-                img(src="https://cdn2.iconfinder.com/data/icons/business-persons-flat-1/512/person_3-256.png")
-                p {{user.name}}
-                //- p {{user.role}}
-                p(v-if="user.player") Это вы
+            transition-group(name="list-complete" tag="div")
+                div(v-if="users" , v-for="user in users" :key="user").userCard.list-complete-item
+                    img(src="https://cdn2.iconfinder.com/data/icons/business-persons-flat-1/512/person_3-256.png")
+                    p {{user.name}}
+                    p(v-if="user.player") Это вы
 </template>
 <script>
 export default {

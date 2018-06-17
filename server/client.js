@@ -29,6 +29,7 @@ class ClientManager {
     }
     broadcast(message, role = "*") {
         let mes = typeof message === "object" ? JSON.stringify(message) : JSON.stringify({ type: messages.MESSAGE, data: message });
+
         if (role === userStates.ALIVE) {
             this.users.filter((user) => {
                 return user.status !== userStates.DEAD;
