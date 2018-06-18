@@ -204,7 +204,8 @@ let events = {
     police : function(message, user) {
         let suspect = this.game.clients.findUser(message);
         let ans = suspect.role === roles.MAFIA ? "мафия!" : "не мафия";
-        user.send(`${suspect.name} - ${ans}`);
+        let mes = JSON.stringify({ type: messages.MESSAGE, data: `${suspect.name} - ${ans}` });
+        user.send(mes);
         this.game.changeState(this.game.states.BEFORE_VOTING);
 
         this.beforeVoting();
@@ -275,7 +276,6 @@ let events = {
             return client.status !== userStates.DEAD;
         }).length) {
             this.game.changeState(this.game.states.VOTED);
-
             this.voted();
         }
     },
@@ -338,9 +338,10 @@ let events = {
 
         if (this.game.isFinnished()) {
             this.game.clients.broadcast(`Победили ${this.game.whoWon()}`);
-
+            this.game.changeState(this.game.states.FINNISH);
             this.finnish();
         } else {
+            this.game.changeState(this.game.states.SLEEP);
             this.sleep();
         }
     },

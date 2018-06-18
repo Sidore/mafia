@@ -7,7 +7,7 @@ class User {
         this.status = "alive";
     }
     send(message) {
-        console.log(`User ${this.name} get message: ${message}`);
+        console.log(`User ${this.name} got message: ${message}`);
         this.ws.send(message);
     }
     changeStatus(to) {
