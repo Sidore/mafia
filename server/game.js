@@ -13,7 +13,8 @@ let events = {
         switch (this.game.state) {
         case "idle" :
             if (action.type === messages.AUTH && action.message) {
-                user.name = action.message;
+                user.changeName(action.message);
+
                 this.game.clients.broadcast(`Новый игрок ${user.name}`);
             } else if (action.type === messages.GAME_START && this.game.clients.users.length >= gameConfig.requiredToPlay) {
                 this.start();
@@ -122,7 +123,7 @@ let events = {
         console.log(rolesList);
 
         this.game.clients.users.forEach((user) => {
-            user.role = rolesList.pop();
+            user.changeRole(rolesList.pop());
         });
 
         console.log(this.game.clients.users.map((user) => {
@@ -130,7 +131,8 @@ let events = {
         }));
 
         this.game.clients.users.forEach((user) => {
-            user.send(`Ваша роль: ${user.role}`);
+            let mes = JSON.stringify({ type: messages.MESSAGE, data: `Ваша роль: ${user.role}` });
+            user.send(mes);
         });
     },
     mafia : function(message) {
@@ -139,7 +141,8 @@ let events = {
         let victim = this.game.clients.users.find((user) => {
             return user.name === message;
         });
-        victim.status = userStates.SHOOTED;
+
+        victim.changeStatus(userStates.SHOOTED);
 
         this.game.queue.push(`Ночью был убит ${victim.name}`);
 
@@ -171,7 +174,7 @@ let events = {
     doctor : function(message) {
         if (message) {
             let cured = this.game.clients.findUser(message);
-            cured.status = userStates.CURED;
+            cured.changeStatus(userStates.CURED);
             this.game.queue.push(`Ночью был вылечен ${cured.name}`);
             this.game.changeState(this.game.states.POLICE);
         }
@@ -213,11 +216,11 @@ let events = {
 
         this.game.clients.forEach((client) => {
             if (client.status === userStates.SHOOTED) {
-                client.status = userStates.DEAD;
+                client.changeStatus(userStates.DEAD);
             }
 
             if (client.status === userStates.CURED) {
-                client.status = userStates.ALIVE;
+                client.changeStatus(userStates.ALIVE);
             }
         });
 
@@ -316,7 +319,7 @@ let events = {
 
             dead = this.game.clients.findUser(dead.name);
 
-            dead.status = userStates.DEAD;
+            dead.changeStatus(userStates.DEAD);
 
             this.game.clients.broadcast(`На голосовании был выбран и убит ${dead.name}`);
         }

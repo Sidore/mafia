@@ -7,11 +7,20 @@ class User {
         this.status = "alive";
     }
     send(message) {
+        console.log(`User ${this.name} get message: ${message}`);
         this.ws.send(message);
     }
     changeStatus(to) {
         console.log(`User ${this.name} status: ${this.status} --> ${to}`);
         this.status = to;
+    }
+    changeName(to) {
+        console.log(`User ${this.name} name: ${this.name} --> ${to}`);
+        this.name = to;
+    }
+    changeRole(to) {
+        console.log(`User ${this.name} role: ${this.role} --> ${to}`);
+        this.role = to;
     }
 }
 
