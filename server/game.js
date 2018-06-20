@@ -5,10 +5,20 @@ const userStates = require("./models/userStates");
 const gameConfig = require("./config/game.config");
 const gameEvents = require("./models/gameEvents");
 const messages = require("./models/messageStates");
+const chalk = require("chalk");
 
 let events = {
     userAction: function(user, action) {
-        console.log("game.state", this.game.state);
+        console.log(
+            chalk.black.bgYellow(" Game state "),
+            chalk.yellow(this.game.state),
+            " from ",
+            chalk.black.bgBlueBright(user.name),
+            "action:",
+            chalk.magenta(action.type),
+            "message:",
+            chalk.green(action.message)
+        );
 
         switch (this.game.state) {
         case "idle" :
@@ -126,9 +136,9 @@ let events = {
             user.changeRole(rolesList.pop());
         });
 
-        console.log(this.game.clients.users.map((user) => {
-            return { name : user.name, role : user.role };
-        }));
+        // console.log(this.game.clients.users.map((user) => {
+        //     return { name : user.name, role : user.role };
+        // }));
 
         this.game.clients.users.forEach((user) => {
             let mes = JSON.stringify({ type: messages.MESSAGE, data: `Ваша роль: ${user.role}` });
@@ -257,9 +267,9 @@ let events = {
         this.game.changeState(this.game.states.VOTING);
     },
     voting : function(message, user) {
-        console.log(this.game.voting._length + 1 + " / " + this.game.clients.users.filter((client) => {
+        console.log(chalk.cyan(this.game.voting._length + 1) + " / " + chalk.cyanBright(this.game.clients.users.filter((client) => {
             return client.status !== userStates.DEAD;
-        }).length);
+        }).length));
         if (!this.game.voting[user.name]) {
             let goal = this.game.clients.findUser(message);
             if (goal) {
@@ -283,7 +293,7 @@ let events = {
         let results = [];
         let dead = null;
 
-        console.log(this.game.voting);
+        // console.log(this.game.voting);
 
         this.game.clients.users.filter((user) => {
             return user.status !== userStates.DEAD;
@@ -315,7 +325,7 @@ let events = {
         })) {
             this.game.clients.broadcast("На голосовании совпали голоса и никто не выбывает");
         } else {
-            console.log(dead);
+            // console.log(dead);
 
             dead = this.game.clients.findUser(dead.name);
 
@@ -386,7 +396,7 @@ class Game {
     }
 
     changeState(to) {
-        console.log(`Game state: ${this.state} --> ${to}`);
+        console.log(`${chalk.black.bgYellow(" Game state ")} : ${chalk.yellow(this.state)} --> ${chalk.yellow(to)}`);
         this.state = to;
     }
 }

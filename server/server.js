@@ -8,6 +8,7 @@ const fs = require("fs");
 const serverBundle = require("../dist/vue-ssr-server-bundle.json");
 const clientManifest = require("../dist/vue-ssr-client-manifest.json");
 const serverRenderer = require("vue-server-renderer");
+const chalk = require("chalk");
 
 const GameManager = require("./game");
 
@@ -52,19 +53,17 @@ server.get("*", (req, res) => {
 
 server.listen(PORT);
 
-console.log(`server ${PORT}`);
+console.log(chalk.black.bgGreen(` Server run on http://localhost:${PORT} `));
 
 wss.on("connection", (ws) => {
     let user = game.clients.addUser(ws);
 
-    console.log("array of users:", game.clients.users.map((client) => {
-        return client.name;
-    }));
+    // console.log("array of users:", game.clients.users.map((client) => {
+    //     return client.name;
+    // }));
 
     ws.on("message", (message) => {
         let action = JSON.parse(message);
-
-        console.log("user action:", user.name, action);
 
         game.events.userAction(user, action);
     });

@@ -1,6 +1,8 @@
 const User = require("./models/user");
 const userStates = require("./models/userStates");
 const messages = require("./models/messageStates");
+const chalk = require("chalk");
+
 class ClientManager {
     constructor() {
         this.counter = 1;
@@ -29,7 +31,7 @@ class ClientManager {
     }
     broadcast(message, role = "*") {
         let mes = typeof message === "object" ? JSON.stringify(message) : JSON.stringify({ type: messages.MESSAGE, data: message });
-        console.log(`Broadcasted message to group ${role} message ${mes}`);
+        console.log(`${chalk.black.bgGreen(" Broadcasted message ")} to group ${chalk.green(role)} message ${chalk.green(mes)}`);
 
         if (role === userStates.ALIVE) {
             this.users.filter((user) => {
