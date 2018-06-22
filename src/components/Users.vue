@@ -1,12 +1,11 @@
 <template lang="pug">
-    div#users
-        h3 Сейчас играют:
-        div.players
-            transition-group(name="list-complete" tag="div")
-                div(v-if="users" , v-for="user in users" :key="user").userCard.list-complete-item
-                    img(src="https://cdn2.iconfinder.com/data/icons/business-persons-flat-1/512/person_3-256.png")
-                    p {{user.name}}
-                    p(v-if="user.player") Это вы
+    div#users(v-if="users.length > 0")
+        h3 Жители города:
+        transition-group(name="list-complete" tag="div").players
+            div(v-for="user in users" :key="user").userCard.list-complete-item
+                img(src="https://interior-stickers.ru/30554-thickbox_default/gangster-s-avtomatom-8.jpg")
+                p {{user.name}}
+                p(v-if="user.player") Это вы
 </template>
 <script>
 export default {
@@ -26,7 +25,8 @@ export default {
 <style lang="scss">
     #users {
         width: 100%;
-        background: #efefef;
+        background: #555;
+        color: #eee;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -38,13 +38,20 @@ export default {
         }
 
         .userCard {
-            border: 1px solid #ccc;
+            border: 5px solid #eee;
             border-radius: 5px;
             width: 100px;
-            background: #efefef;
+            background: linear-gradient(to right, #3EC8AC 0%, #4E90A4 100%);;
             display: flex;
             flex-direction: column;
             text-align: center;
+            padding: 0;
+            margin: 15px;
+
+            p {
+                margin: 0;
+                color: #333;
+            }
 
             img {
                 width: 100%;

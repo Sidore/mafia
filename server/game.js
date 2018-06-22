@@ -13,7 +13,7 @@ let events = {
             chalk.black.bgYellow(" Game state "),
             chalk.yellow(this.game.state),
             " from ",
-            chalk.black.bgBlueBright(user.name),
+            chalk.black.bgBlueBright(` ${ user.name } `),
             "action:",
             chalk.magenta(action.type),
             "message:",
@@ -356,7 +356,7 @@ let events = {
         }
     },
     finnish : function() {
-        this.start();
+        setTimeout(this.start.bind(this), gameConfig.startGameDelay);
     }
 };
 

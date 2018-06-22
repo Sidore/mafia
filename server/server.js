@@ -58,10 +58,6 @@ console.log(chalk.black.bgGreen(` Server run on http://localhost:${PORT} `));
 wss.on("connection", (ws) => {
     let user = game.clients.addUser(ws);
 
-    // console.log("array of users:", game.clients.users.map((client) => {
-    //     return client.name;
-    // }));
-
     ws.on("message", (message) => {
         let action = JSON.parse(message);
 

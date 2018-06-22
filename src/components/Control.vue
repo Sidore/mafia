@@ -1,7 +1,6 @@
 <template lang="pug">
     div#input
-        div(v-if="!started")
-            button("v-on:click"='start') Start
+        button("v-on:click"='start' v-if="!started").start Start
         div(v-else)
             //- div(v-if="conversationType == 'text'")
             //-     input(v-model="message")
@@ -57,6 +56,12 @@ export default {
         padding: 20px;
         margin: 20px;
         font-size: 20px;
+    }
+
+    .start {
+        height: 100px;
+        width: 100px;
+        background: linear-gradient(to right, #4E90A4 0%, #3EC8AC 100%);
     }
 }
 </style>

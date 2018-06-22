@@ -1,8 +1,6 @@
 <template lang="pug">
-  div
-    p Messages
-    transition-group(name="list-complete" tag="div")
-        p(v-for='m in messages' :key="m").list-complete-item {{m}}
+  transition-group(name="list-complete" tag="div").messages
+    p(v-for='m in messages' :key="m").list-complete-item {{m}}
 </template>
 <script>
 export default {
@@ -21,6 +19,12 @@ export default {
 };
 </script>
 <style lang="scss">
+
+.messages {
+  background: #666;
+  color: #eee;
+}
+
 .list-complete-item {
   transition: all 1s;
 //   display: inline-block;
