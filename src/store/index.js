@@ -47,7 +47,8 @@ export function createStore() {
                 users: [],
                 started : false,
                 conversationType : "text", // options || text
-                options : []
+                options : [],
+                optionType : "Состояние выбора по умолчанию"
             };
         },
         actions: {
@@ -97,7 +98,8 @@ export function createStore() {
             option : (state, message) => {
                 console.log(message);
                 state.conversationType = "options";
-                state.options = message;
+                state.options = message.options;
+                state.optionType = message.optionType;
             },
             choose : (state) => {
                 state.options = [];
@@ -121,6 +123,10 @@ export function createStore() {
             options : (state) => {
                 return state.options;
             },
+
+            optionType : (state) => {
+                return state.optionType;
+            }
         }
     });
 }

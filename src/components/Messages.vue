@@ -1,6 +1,6 @@
 <template lang="pug">
   transition-group(name="list-complete" tag="div").messages
-    p(v-for='m in messages' :key="m").list-complete-item {{m}}
+    p(v-for='m in messages' :key="m").list-complete-item.item {{m}}
 </template>
 <script>
 export default {
@@ -23,6 +23,10 @@ export default {
 .messages {
   background: #666;
   color: #eee;
+}
+
+.item {
+  margin: 0;
 }
 
 .list-complete-item {

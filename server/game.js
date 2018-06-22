@@ -98,11 +98,14 @@ let events = {
         this.game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, roles.MAFIA);
         this.game.clients.broadcast({
             type: messages.OPTION,
-            data : this.game.clients.users.filter((user) => {
-                return user.role !== roles.MAFIA && user.status !== userStates.DEAD;
-            }).map((user) => {
-                return user.name;
-            })
+            data :  {
+                options : this.game.clients.users.filter((user) => {
+                    return user.role !== roles.MAFIA && user.status !== userStates.DEAD;
+                }).map((user) => {
+                    return user.name;
+                }),
+                optionType : "mafia"
+            }
         }, roles.MAFIA);
 
         this.game.changeState(this.game.states.MAFIA);
@@ -169,11 +172,14 @@ let events = {
             this.game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, roles.DOCTOR);
             this.game.clients.broadcast({
                 type: messages.OPTION,
-                data : this.game.clients.users.filter((user) => {
-                    return user.status !== states.DEAD;
-                }).map((user) => {
-                    return user.name;
-                })
+                data : {
+                    options : this.game.clients.users.filter((user) => {
+                        return user.status !== states.DEAD;
+                    }).map((user) => {
+                        return user.name;
+                    }),
+                    optionType : "doctor"
+                }
             }, roles.DOCTOR);
         } else {
             this.game.changeState(this.game.states.POLICE);
@@ -200,11 +206,14 @@ let events = {
             this.game.clients.broadcast(`Делайте свой выбор: ${chooseList}`, roles.POLICE);
             this.game.clients.broadcast({
                 type: messages.OPTION,
-                data : this.game.clients.users.filter((user) => {
-                    return user.status !== states.DEAD && user.role !== roles.POLICE;
-                }).map((user) => {
-                    return user.name;
-                })
+                data : {
+                    options : this.game.clients.users.filter((user) => {
+                        return user.status !== states.DEAD && user.role !== roles.POLICE;
+                    }).map((user) => {
+                        return user.name;
+                    }),
+                    optionType : "police"
+                }
             }, roles.POLICE);
         } else {
             this.game.changeState(this.game.states.BEFORE_VOTING);
@@ -258,11 +267,14 @@ let events = {
         this.game.clients.broadcast(`Голосуем за игрока кто может быть мафией: ${chooseList}`, userStates.ALIVE);
         this.game.clients.broadcast({
             type : messages.OPTION,
-            data : this.game.clients.users.filter((us) => {
-                return us.status !== userStates.DEAD;
-            }).map((us) => {
-                return us.name;
-            })
+            data : {
+                options : this.game.clients.users.filter((us) => {
+                    return us.status !== userStates.DEAD;
+                }).map((us) => {
+                    return us.name;
+                }),
+                optionType : "voting"
+            }
         }, userStates.ALIVE);
         this.game.changeState(this.game.states.VOTING);
     },

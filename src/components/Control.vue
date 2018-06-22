@@ -6,6 +6,8 @@
             //-     input(v-model="message")
             //-     button("@click"="send") Отправить
             div(v-if="conversationType == 'options'")
+                p {{optionType}}
+                    img(:src="optionImage" height="100")
                 button("v-for"="option in options" @click="choose(option)").card {{option}}
 </template>
 <script>
@@ -13,7 +15,7 @@ export default {
     props: [ "socket" ],
     data() {
         return {
-            message: "",
+            message: ""
         };
     },
     methods : {
@@ -46,6 +48,26 @@ export default {
         options : function() {
             return this.$store.getters.options;
         },
+        optionType : function() {
+            let type = this.$store.getters.optionType;
+            switch (type) {
+            case "mafia" : return "В кого стреляем?";
+            case "doctor" : return "Кого лечим?";
+            case "police" : return "Кого подозреваем?";
+            case "voting" : return "Против кого голосуем?";
+            default : return "";
+            }
+        },
+        optionImage : function() {
+            let type = this.$store.getters.optionType;
+            switch (type) {
+            case "mafia" : return "https://vignette.wikia.nocookie.net/fallout/images/6/6e/MadeMan2.png/revision/latest?cb=20110814153411";
+            case "doctor" : return "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Osgb-isyerihekimi.jpg/220px-Osgb-isyerihekimi.jpg";
+            case "police" : return "http://www.lvivpost.net/application/_images/big/news/2016/04/28/890.jpg";
+            case "voting" : return "http://infobusiness2.ru/files/image/Thumbnail.jpg";
+            default : return "";
+            }
+        }
     }
 };
 </script>
