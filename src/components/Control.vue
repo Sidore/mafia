@@ -8,11 +8,15 @@
             div(v-if="conversationType == 'options'")
                 p {{optionType}}
                     img(:src="optionImage" height="100")
-                button("v-for"="option in options" @click="choose(option)").card {{option}}
+                user-card("v-for"="option in options" @click="choose(option)" :user="optionsToUser(option)").tst
 </template>
 <script>
+import userCard from "@components/playerCard";
 export default {
     props: [ "socket" ],
+    components : {
+        "user-card" : userCard
+    },
     data() {
         return {
             message: ""
@@ -32,9 +36,16 @@ export default {
             }));
         },
         choose : function(option) {
+            console.log("choose", option);
             this.message = option;
             this.send();
             this.$store.dispatch("choose");
+        },
+
+        optionsToUser : function(option) {
+            return {
+                name : option
+            };
         }
     },
 

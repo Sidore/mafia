@@ -2,17 +2,18 @@
     div#users(v-if="users.length > 0")
         h3 Жители города:
         transition-group(name="list-complete" tag="div").players
-            div(v-for="user in users" :key="user").userCard.list-complete-item
-                img(src="https://interior-stickers.ru/30554-thickbox_default/gangster-s-avtomatom-8.jpg")
-                p {{user.name}}
-                p(v-if="user.player") Это вы
+            user-card(v-for="user in users" :key="user" :user="user").list-complete-item
 </template>
 <script>
+import userCard from "@components/playerCard";
 export default {
     data() {
         return {
 
         };
+    },
+    components : {
+        "user-card" : userCard
     },
     computed: {
         users : function() {
@@ -37,25 +38,6 @@ export default {
             flex-direction: row;
         }
 
-        .userCard {
-            border: 5px solid #eee;
-            border-radius: 5px;
-            width: 100px;
-            background: linear-gradient(to right, #3EC8AC 0%, #4E90A4 100%);;
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-            padding: 0;
-            margin: 15px;
 
-            p {
-                margin: 0;
-                color: #333;
-            }
-
-            img {
-                width: 100%;
-            }
-        }
     }
 </style>
