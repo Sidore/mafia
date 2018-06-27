@@ -5,10 +5,12 @@
             //- div(v-if="conversationType == 'text'")
             //-     input(v-model="message")
             //-     button("@click"="send") Отправить
-            div(v-if="conversationType == 'options'")
+            div(v-if="conversationType == 'options'").column
                 p {{optionType}}
                     img(:src="optionImage" height="100")
-                user-card("v-for"="option in options" @click="choose(option)" :user="optionsToUser(option)").tst
+                transition-group(name="list-complete" tag="div").row
+                    user-card(v-for="option in options" @click="choose(option)" :key="option" :user="optionsToUser(option)").list-complete-item
+
 </template>
 <script>
 import userCard from "@components/playerCard";
@@ -95,6 +97,16 @@ export default {
         height: 100px;
         width: 100px;
         background: linear-gradient(to right, #4E90A4 0%, #3EC8AC 100%);
+    }
+
+    .column {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
     }
 }
 </style>

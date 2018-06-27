@@ -28,6 +28,7 @@ export default {
             padding: 0;
             margin: 15px;
             transition: all .5s;
+            cursor: pointer;
 
             p {
                 margin: 0;
@@ -40,7 +41,7 @@ export default {
 
             &:hover {
                 background: linear-gradient(to left, #3EC8AC 0%, #4E90A4 100%);
-                box-shadow: rgba(33, 33, 33, .4) 5px 5px;
+                box-shadow: rgba(33, 33, 33, .4) 2px 2px 5px;
             }
         }
 
